@@ -144,7 +144,7 @@ def register_view(request):
 
         # Send Django-token-based verification email (same as API flow)
         from .auth_utils import send_verification_email
-        send_verification_email(user, request)
+        # send_verification_email(user, request)  # temporarily disabled
 
         messages.success(
             request,
