@@ -17,10 +17,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-insecure-key-change-in-produ
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-_raw_hosts = os.environ.get('ALLOWED_HOSTS', '')
-if not _raw_hosts and not DEBUG:
-    raise RuntimeError("ALLOWED_HOSTS environment variable must be set in production.")
-ALLOWED_HOSTS = _raw_hosts.split(',') if _raw_hosts else ['localhost', '127.0.0.1']
+_raw_hosts = os.environ.get('ALLOWED_HOSTS', '.up.railway.app,localhost,127.0.0.1')
 
 # ── Apps ──────────────────────────────────────────────
 INSTALLED_APPS = [
