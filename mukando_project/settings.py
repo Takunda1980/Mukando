@@ -3,10 +3,15 @@ Django settings for Mukando — Production-ready configuration
 """
 import os
 from pathlib import Path
-from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR / '.env')
+
+# Load .env locally — on Railway env vars are injected directly
+try:
+    from dotenv import load_dotenv
+    load_dotenv(BASE_DIR / '.env')
+except Exception:
+    pass
 # ── Security ──────────────────────────────────────────
 SECRET_KEY = os.environ.get('SECRET_KEY')
 if not SECRET_KEY:
