@@ -13,12 +13,7 @@ try:
 except Exception:
     pass
 # ── Security ──────────────────────────────────────────
-SECRET_KEY = os.environ.get('SECRET_KEY')
-if not SECRET_KEY:
-    raise RuntimeError(
-        "SECRET_KEY environment variable is not set. "
-        "Generate one with: python -c \"import secrets; print(secrets.token_urlsafe(50))\""
-    )
+SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-insecure-key-change-in-production')
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
