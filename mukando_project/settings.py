@@ -155,6 +155,9 @@ PAYNOW_INTEGRATION_ID  = os.environ.get('PAYNOW_INTEGRATION_ID', '')
 PAYNOW_INTEGRATION_KEY = os.environ.get('PAYNOW_INTEGRATION_KEY', '')
 PAYNOW_TEST_MODE = os.environ.get('PAYNOW_TEST_MODE', 'True') == 'True'
 
+# ── CSRF ──────────────────────────────────────────────
+CSRF_TRUSTED_ORIGINS = ['https://mukando-production.up.railway.app']
+
 # ── Security headers (production only) ───────────────
 if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
@@ -163,7 +166,6 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = False
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
-    CSRF_TRUSTED_ORIGINS = ['https://mukando-production.up.railway.app']
 
 # ── Logging ───────────────────────────────────────────
 LOGGING = {
