@@ -3,6 +3,7 @@ Django settings for Mukando — Production-ready configuration
 """
 import os
 from pathlib import Path
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -12,12 +13,14 @@ try:
     load_dotenv(BASE_DIR / '.env')
 except Exception:
     pass
+
 # ── Security ──────────────────────────────────────────
 SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-insecure-key-change-in-production')
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-_raw_hosts = os.environ.get('ALLOWED_HOSTS', '.up.railway.app,localhost,127.0.0.1')
+_raw_hosts = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,.up.railway.app')
+ALLOWED_HOSTS = [h.strip() for h in _raw_hosts.split(',') if h.strip()]
 
 # ── Apps ──────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -69,54 +72,35 @@ TEMPLATES = [{
 WSGI_APPLICATION = 'mukando_project.wsgi.application'
 
 # ── Database ──────────────────────────────────────────
-# SQLite: perfectly appropriate for small-to-medium Mukando deployments.
-# Switch to PostgreSQL only when you need multi-process write concurrency
-# (e.g. multiple gunicorn workers on separate machines).
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-# Production PostgreSQL (uncomment and set env vars):
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': os.environ.get('DB_NAME', 'mukando'),
-#         'USER': os.environ.get('DB_USER', 'mukando_user'),
-#         'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-#         'HOST': os.environ.get('DB_HOST', 'localhost'),
-#         'PORT': os.environ.get('DB_PORT', '5432'),
-#         'CONN_MAX_AGE': 60,
-#     }
-# }
 
 # ── REST Framework ────────────────────────────────────
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.TokenAuthentication',   # kept for legacy API clients
-        'rest_framework.authentication.SessionAuthentication', # kept for template views
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
-    # ── Rate limiting ────────────────────────────────────
-    # Applied globally; the AI chat endpoint overrides with a tighter limit.
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.UserRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'user': '200/hour',        # general API calls
-        'anon': '30/hour',         # unauthenticated (register/login)
+        'user': '200/hour',
+        'anon': '30/hour',
     },
 }
 
-# ── SimpleJWT ─────────────────────────────────────────────────────────
-from datetime import timedelta
-
+# ── SimpleJWT ─────────────────────────────────────────
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME':     timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME':    timedelta(days=7),
@@ -143,43 +127,43 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # ── CORS ──────────────────────────────────────────────
-CORS_ALLOW_ALL_ORIGINS = DEBUG
-CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',') if not DEBUG else []
+_cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS', '')
+if _cors_origins:
+    CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_origins.split(',') if o.strip()]
+    CORS_ALLOW_ALL_ORIGINS = False
+else:
+    CORS_ALLOW_ALL_ORIGINS = DEBUG
+    CORS_ALLOWED_ORIGINS = []
 
 # ── Email ─────────────────────────────────────────────
-EMAIL_BACKEND = os.environ.get(
-    'EMAIL_BACKEND',
-    'django.core.mail.backends.console.EmailBackend'
-)
-EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.sendgrid.net')
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'apikey')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@mukando.app')
 
-# ── AI Chat (Anthropic) ──────────────────────────────
-ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
+# ── Groq AI ───────────────────────────────────────────
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
 
-# ── Africa's Talking (SMS & WhatsApp) ────────────────
+# ── Africa's Talking ──────────────────────────────────
 AT_USERNAME = os.environ.get('AT_USERNAME', '')
 AT_API_KEY = os.environ.get('AT_API_KEY', '')
 
 # ── PayNow Zimbabwe ───────────────────────────────────
-# Set via environment variables — never hard-code live credentials.
-# Register at: https://www.paynow.co.zw/account/integration/browse
 PAYNOW_INTEGRATION_ID  = os.environ.get('PAYNOW_INTEGRATION_ID', '')
 PAYNOW_INTEGRATION_KEY = os.environ.get('PAYNOW_INTEGRATION_KEY', '')
 PAYNOW_TEST_MODE = os.environ.get('PAYNOW_TEST_MODE', 'True') == 'True'
 
-# ── Security headers (production) ────────────────────
+# ── Security headers (production only) ───────────────
 if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_SSL_REDIRECT = True
+    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True') == 'True'
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
@@ -187,27 +171,13 @@ if not DEBUG:
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
-        },
-    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
         },
     },
     'root': {
         'handlers': ['console'],
         'level': 'INFO',
-    },
-    'loggers': {
-        'rounds': {
-            'handlers': ['console'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
-            'propagate': False,
-        },
     },
 }
