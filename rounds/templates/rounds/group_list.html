@@ -1,0 +1,197 @@
+{% extends 'rounds/base.html' %}
+{% block title %}My Groups{% endblock %}
+{% block page_title %}👥 My Groups{% endblock %}
+{% block nav_groups %}active{% endblock %}
+
+{% block content %}
+<style>
+  .page-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+/* GRID SYSTEM */
+.group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 22px;
+}
+
+/* CARD */
+.group-card {
+  padding: 18px;
+}
+
+/* HEADER */
+.group-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.group-title {
+  font-size: 1.1rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+.group-subtitle {
+  font-size: 0.85rem;
+  color: black;
+  margin-top: 4px;
+}
+
+/* METRICS */
+.metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.metric {
+  background: orange;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.metric .label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: black;
+}
+
+.metric .value {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.metric .success {
+  color: #10b981;
+}
+
+/* PROGRESS */
+.progress {
+  height: 6px;
+  background: #eee;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4f46e5, #7c3aed);
+}
+
+/* BUTTON */
+.full-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.empty-state .icon {
+  font-size: 3.5rem;
+  margin-bottom: 10px;
+}
+
+.empty-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+}
+</style>
+<!-- ACTION BAR -->
+<div class="page-actions">
+  <a href="{% url 'create_group' %}" class="btn btn-primary">+ Create Group</a>
+  <a href="{% url 'join_group' %}" class="btn btn-outline">🔗 Join with Code</a>
+</div>
+
+<!-- GRID -->
+{% if groups %}
+<div class="group-grid">
+
+  {% for g in groups %}
+  <div class="card group-card">
+
+    <!-- HEADER -->
+    <div class="group-header">
+      <div>
+        <h3 class="group-title">{{ g.name }}</h3>
+        <p class="group-subtitle">
+          {{ g.description|truncatechars:60|default:"No description" }}
+        </p>
+      </div>
+
+      <span class="badge {% if g.status == 'active' %}badge-success{% else %}badge-muted{% endif %}">
+        {{ g.get_status_display }}
+      </span>
+    </div>
+
+    <!-- METRICS -->
+    <div class="metrics">
+
+      <div class="metric">
+        <span class="label">Contribution</span>
+        <span class="value">${{ g.contribution_amount }}</span>
+      </div>
+
+      <div class="metric">
+        <span class="label">Members</span>
+        <span class="value">{{ g.member_count }}/{{ g.max_members }}</span>
+      </div>
+
+      <div class="metric">
+        <span class="label">Collected</span>
+        <span class="value success">${{ g.total_collected|floatformat:0 }}</span>
+      </div>
+
+      <div class="metric">
+        <span class="label">Cycle</span>
+        <span class="value">{{ g.get_cycle_period_display }}</span>
+      </div>
+
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress">
+      <div class="progress-fill"
+           style="width:{% widthratio g.member_count g.max_members 100 %}%"></div>
+    </div>
+
+    <!-- CTA -->
+    <a href="{% url 'group_detail' g.pk %}" class="btn btn-primary full-btn">
+      View Group →
+    </a>
+
+  </div>
+  {% endfor %}
+
+</div>
+
+{% else %}
+
+<!-- EMPTY STATE -->
+<div class="empty-state">
+  <div class="icon">👥</div>
+  <h3>No groups yet</h3>
+  <p>Create your first Mukando group or join one with an invite code.</p>
+
+  <div class="empty-actions">
+    <a href="{% url 'create_group' %}" class="btn btn-primary">Create Group</a>
+    <a href="{% url 'join_group' %}" class="btn btn-outline">Join Group</a>
+  </div>
+</div>
+
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,95 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up — Mukando Stokvel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'rounds/css/main.css' %}">
+</head>
+<body>
+{% if messages %}
+  {% for message in messages %}
+    <span class="django-message" data-level="{{ message.tags }}" style="display:none">{{ message }}</span>
+  {% endfor %}
+{% endif %}
+
+<div class="auth-page">
+  <div class="auth-left">
+    <div style="position:relative;z-index:1">
+      <div class="logo-mark" style="width:52px;height:52px;background:var(--color-primary);border-radius:14px;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;font-size:1.6rem;color:#fff;margin-bottom:24px;box-shadow:0 4px 20px rgba(201,80,30,0.5)">M</div>
+      <p class="auth-tagline">Join your<br>savings <span>circle.</span></p>
+      <p style="color:rgba(255,255,255,0.55);font-size:0.9rem;line-height:1.7">
+        Create your free account and start managing your Mukando or Stokvel group in minutes.
+      </p>
+      <div style="margin-top:32px;padding:20px;background:rgba(232,160,32,0.1);border-radius:16px;border:1px solid rgba(232,160,32,0.2)">
+        <p style="color:rgba(255,255,255,0.8);font-size:0.9rem;line-height:1.7">
+          <strong style="color:var(--color-accent)">Mukando</strong> (Shona) • <strong style="color:var(--color-accent)">Stokvel</strong> (South African) — a trusted community savings tradition, now digitised for the modern age.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-right" style="max-width:560px">
+    <div class="auth-form-wrap" style="max-width:480px">
+      <h1 class="auth-title">Create account</h1>
+      <p class="auth-subtitle">It's free, forever. No hidden charges.</p>
+
+      <form method="post" data-validate>
+        {% csrf_token %}
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">First Name <span class="required">*</span></label>
+            <input type="text" name="first_name" class="form-control" placeholder="Takudzwa" required value="{{ form_data.first_name|default:'' }}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name <span class="required">*</span></label>
+            <input type="text" name="last_name" class="form-control" placeholder="Moyo" required value="{{ form_data.last_name|default:'' }}">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Username <span class="required">*</span></label>
+          <input type="text" name="username" class="form-control" placeholder="tmoyo2024" required value="{{ form_data.username|default:'' }}">
+          <span class="form-hint">Letters, numbers and underscores only.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email Address <span class="required">*</span></label>
+          <input type="email" name="email" class="form-control" placeholder="you@example.co.zw" required value="{{ form_data.email|default:'' }}">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="tel" name="phone" class="form-control" placeholder="+263 77 123 4567" value="{{ form_data.phone|default:'' }}">
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Password <span class="required">*</span></label>
+            <input type="password" name="password" class="form-control" placeholder="Min 8 characters" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm Password <span class="required">*</span></label>
+            <input type="password" name="password2" class="form-control" placeholder="Repeat password" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:8px">
+          Create My Account →
+        </button>
+      </form>
+
+      <div style="text-align:center;margin-top:24px;color:var(--text-muted);font-size:0.875rem">
+        Already have an account?
+        <a href="{% url 'login' %}" style="font-weight:600">Sign in</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'rounds/js/main.js' %}"></script>
+</body>
+</html>

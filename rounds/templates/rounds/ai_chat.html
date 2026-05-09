@@ -1,0 +1,488 @@
+{% extends 'rounds/base.html' %}
+{% block title %}MukandoAI Chat{% endblock %}
+{% block page_title %}🤖 MukandoAI{% endblock %}
+{% block nav_ai %}active{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* ── Override content padding for full-height chat ── */
+  .content { padding: 0 !important; overflow: hidden !important; height: calc(100vh - 57px); display: flex; flex-direction: column; }
+
+  :root {
+    --wa-bg:        #0b141a;
+    --wa-panel:     #111b21;
+    --wa-header:    #202c33;
+    --wa-input-bg:  #2a3942;
+    --wa-msg-in:    #202c33;
+    --wa-msg-out:   #005c4b;
+    --wa-border:    #2a3942;
+    --wa-green:     #00a884;
+    --wa-green2:    #008069;
+    --wa-muted:     #8696a0;
+    --wa-text:      #e9edef;
+    --wa-text2:     #aebac1;
+    --wa-tick:      #53bdeb;
+  }
+
+  /* ── Shell ── */
+  .wa-shell {
+    display: flex; flex-direction: column; height: 100%;
+    background: var(--wa-bg); position: relative; overflow: hidden;
+  }
+  /* WhatsApp subtle background texture */
+  .wa-shell::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg width='52' height='52' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 10h4v4h-4zM26 10h4v4h-4zM42 10h4v4h-4zM2 26h4v4H2zM18 26h4v4h-4zM34 26h4v4h-4zM10 42h4v4h-4zM26 42h4v4h-4zM42 42h4v4h-4z' fill='%23fff'/%3E%3C/svg%3E");
+    background-size: 52px 52px;
+  }
+
+  /* ── Header ── */
+  .wa-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; background: var(--wa-header);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    flex-shrink: 0; position: relative; z-index: 2;
+  }
+  .wa-header-left { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+  .wa-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, #00a884 0%, #005c4b 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+    box-shadow: 0 0 0 2px rgba(0,168,132,0.25);
+  }
+  .wa-name { font-size: 0.95rem; font-weight: 600; color: var(--wa-text); }
+  .wa-online {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 0.72rem; color: var(--wa-green);
+  }
+  .online-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--wa-green);
+    animation: blink 2s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .wa-head-btns { display: flex; gap: 2px; }
+  .wa-icon-btn {
+    width: 38px; height: 38px; border-radius: 50%; border: none;
+    background: none; color: var(--wa-muted); font-size: 1.1rem;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .wa-icon-btn:hover { background: rgba(255,255,255,0.07); color: var(--wa-text); }
+
+  /* ── Messages area ── */
+  .wa-messages {
+    flex: 1; overflow-y: auto; overflow-x: hidden;
+    padding: 10px 16px 4px; display: flex; flex-direction: column; gap: 2px;
+    position: relative; z-index: 1; scroll-behavior: smooth;
+  }
+  .wa-messages::-webkit-scrollbar { width: 4px; }
+  .wa-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+  /* ── Date chip ── */
+  .date-chip-wrap { display: flex; justify-content: center; margin: 8px 0; }
+  .date-chip {
+    background: rgba(17,27,33,0.9); border: 1px solid rgba(255,255,255,0.06);
+    backdrop-filter: blur(8px); border-radius: 7px;
+    padding: 4px 12px; font-size: 0.7rem; color: var(--wa-text2);
+  }
+
+  /* ── Message rows ── */
+  .wa-row { display: flex; animation: msgPop 0.18s cubic-bezier(.4,0,.2,1) both; }
+  @keyframes msgPop { from{opacity:0;transform:scale(0.96) translateY(5px)} to{opacity:1;transform:none} }
+  .wa-row.out { justify-content: flex-end; }
+  .wa-row.in  { justify-content: flex-start; }
+  /* Reduce gap for consecutive same-direction messages */
+  .wa-row.in + .wa-row.in,
+  .wa-row.out + .wa-row.out { margin-top: -1px; }
+
+  /* ── Bubbles ── */
+  .wa-bubble {
+    max-width: min(70%, 500px); padding: 6px 9px 4px;
+    border-radius: 7.5px; font-size: 0.875rem; line-height: 1.55;
+    position: relative; word-break: break-word;
+  }
+  /* Tail shape */
+  .wa-bubble::after {
+    content: ''; position: absolute; top: 0;
+    width: 8px; height: 13px;
+  }
+  .wa-row.in .wa-bubble {
+    background: var(--wa-msg-in); color: var(--wa-text);
+    border-top-left-radius: 0;
+  }
+  .wa-row.in .wa-bubble::after {
+    left: -7px; background: var(--wa-msg-in);
+    clip-path: polygon(100% 0, 100% 100%, 0 0);
+  }
+  .wa-row.out .wa-bubble {
+    background: var(--wa-msg-out); color: #e9edef;
+    border-top-right-radius: 0;
+  }
+  .wa-row.out .wa-bubble::after {
+    right: -7px; background: var(--wa-msg-out);
+    clip-path: polygon(0 0, 0 100%, 100% 0);
+  }
+
+  /* Sender label (AI only) */
+  .wa-sender { font-size: 0.7rem; font-weight: 700; color: var(--wa-green); margin-bottom: 3px; }
+
+  /* Time + ticks footer inside bubble */
+  .wa-foot {
+    display: flex; align-items: center; gap: 3px; justify-content: flex-end;
+    float: right; margin-left: 8px; margin-top: 1px; margin-bottom: -2px;
+    font-size: 0.67rem; color: rgba(233,237,239,0.5);
+  }
+  .wa-row.in .wa-foot { color: var(--wa-muted); }
+  .ticks { font-size: 0.75rem; color: var(--wa-tick); }
+
+  /* Rich text inside AI bubbles */
+  .wa-bubble strong { color: #fff; font-weight: 600; }
+  .wa-bubble em     { color: var(--wa-text2); }
+  .wa-bubble code   { background: rgba(0,0,0,0.25); padding: 1px 4px; border-radius: 3px; font-size: 0.82rem; }
+
+  /* ── Typing indicator ── */
+  .typing-row { display: flex; align-items: flex-end; }
+  .typing-bubble {
+    background: var(--wa-msg-in); border-radius: 7.5px; border-top-left-radius: 0;
+    padding: 11px 14px; display: flex; gap: 5px; align-items: center;
+    position: relative;
+  }
+  .typing-bubble::after {
+    content: ''; position: absolute; top: 0; left: -7px;
+    width: 8px; height: 13px;
+    background: var(--wa-msg-in); clip-path: polygon(100% 0, 100% 100%, 0 0);
+  }
+  .t-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--wa-muted);
+    animation: tdot 1.3s ease-in-out infinite;
+  }
+  .t-dot:nth-child(2) { animation-delay: 0.17s; }
+  .t-dot:nth-child(3) { animation-delay: 0.34s; }
+  @keyframes tdot {
+    0%,60%,100% { transform:translateY(0); background:var(--wa-muted); }
+    30%          { transform:translateY(-6px); background:var(--wa-green); }
+  }
+
+  /* ── Suggestion chips ── */
+  .wa-chips {
+    display: flex; gap: 7px; flex-wrap: wrap;
+    padding: 7px 16px 3px; flex-shrink: 0; position: relative; z-index: 1;
+  }
+  .wa-chip {
+    padding: 5px 13px; border-radius: 16px;
+    background: rgba(0,168,132,0.07); border: 1px solid rgba(0,168,132,0.22);
+    color: var(--wa-green); font-size: 0.77rem; font-weight: 500;
+    cursor: pointer; transition: all 0.18s; white-space: nowrap;
+  }
+  .wa-chip:hover { background: rgba(0,168,132,0.15); border-color: rgba(0,168,132,0.45); transform: translateY(-1px); }
+  .wa-chip:active { transform: scale(0.95); }
+
+  /* ── E2E note ── */
+  .wa-e2e {
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+    font-size: 0.68rem; color: var(--wa-muted); padding: 4px 16px 2px;
+    position: relative; z-index: 1; flex-shrink: 0;
+  }
+
+  /* ── Input bar ── */
+  .wa-bar {
+    display: flex; align-items: flex-end; gap: 8px;
+    padding: 7px 12px 11px;
+    background: var(--wa-panel); flex-shrink: 0;
+    position: relative; z-index: 2;
+  }
+  .wa-input-pill {
+    flex: 1; display: flex; align-items: flex-end; gap: 6px;
+    background: var(--wa-input-bg); border-radius: 22px; padding: 8px 14px;
+    min-height: 42px; border: 1px solid rgba(255,255,255,0.05);
+    transition: border-color 0.2s;
+  }
+  .wa-input-pill:focus-within { border-color: rgba(0,168,132,0.3); }
+  .pill-icon-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--wa-muted); font-size: 1.2rem; padding: 0; line-height: 1;
+    transition: color 0.15s; flex-shrink: 0;
+  }
+  .pill-icon-btn:hover { color: var(--wa-text2); }
+  #wa-input {
+    flex: 1; background: none; border: none; outline: none;
+    color: var(--wa-text); font-size: 0.9rem; line-height: 1.5;
+    resize: none; max-height: 120px; overflow-y: auto; scrollbar-width: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  #wa-input::placeholder { color: var(--wa-muted); }
+  #wa-input::-webkit-scrollbar { display: none; }
+
+  .wa-send {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--wa-green); border: none; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 1.1rem; color: #fff;
+    transition: all 0.18s;
+    box-shadow: 0 2px 10px rgba(0,168,132,0.35);
+  }
+  .wa-send.mic { background: var(--wa-input-bg); box-shadow: none; color: var(--wa-muted); border: 1px solid rgba(255,255,255,0.06); }
+  .wa-send:hover { background: var(--wa-green2); transform: scale(1.06); }
+  .wa-send.mic:hover { background: rgba(255,255,255,0.08); }
+  .wa-send:active { transform: scale(0.94); }
+  .wa-send:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+
+  /* Char counter */
+  .char-wrap { position: absolute; right: 66px; bottom: 17px; pointer-events: none; }
+  #char-count { font-size: 0.65rem; color: var(--wa-muted); opacity: 0; transition: opacity 0.2s; }
+  #char-count.show { opacity: 1; }
+  #char-count.warn { color: #f59e0b; }
+
+  /* Scroll to bottom pill */
+  #scroll-pill {
+    position: absolute; right: 16px; bottom: 75px; z-index: 10;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--wa-header); border: 1px solid var(--wa-border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--wa-text2); font-size: 0.9rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  #scroll-pill.show { opacity: 1; pointer-events: all; }
+
+  @media (max-width: 600px) {
+    .wa-bubble { max-width: 85%; }
+    .wa-chips  { gap: 5px; padding: 5px 10px 2px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wa-shell">
+
+  <!-- HEADER -->
+  <div class="wa-header">
+    <div class="wa-header-left">
+      <div class="wa-avatar">🤖</div>
+      <div>
+        <div class="wa-name">MukandoAI</div>
+        <div class="wa-online"><div class="online-dot"></div> online</div>
+      </div>
+    </div>
+    <div class="wa-head-btns">
+      <button class="wa-icon-btn" title="Search">🔍</button>
+      <button class="wa-icon-btn" title="More">⋮</button>
+    </div>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="wa-messages" id="wa-messages">
+    <div class="date-chip-wrap">
+      <div class="date-chip" id="chat-date"></div>
+    </div>
+
+    <!-- Welcome bubble -->
+    <div class="wa-row in">
+      <div class="wa-bubble">
+        <div class="wa-sender">MukandoAI</div>
+        Mangwanani! 👋 I'm MukandoAI — your personal Mukando assistant.<br/><br/>
+        I can see your <strong>real group data</strong>: contributions, payouts, members and balances. Just ask me anything.<br/><br/>
+        <em>Ndingakubatsira nei nhasi?</em> 🇿🇼
+        <div class="wa-foot">
+          <span id="init-time"></span>
+          <span class="ticks">✓✓</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll pill -->
+  <div id="scroll-pill" onclick="scrollBottom(true)">↓</div>
+
+  <!-- E2E -->
+  <div class="wa-e2e">🔒 Your messages are private</div>
+
+  <!-- SUGGESTION CHIPS -->
+  <div class="wa-chips" id="wa-chips">
+    <div class="wa-chip" onclick="useChip(this)">💰 How much have I contributed?</div>
+    <div class="wa-chip" onclick="useChip(this)">📅 When is my next payout?</div>
+    <div class="wa-chip" onclick="useChip(this)">⚠️ Who hasn't paid?</div>
+    <div class="wa-chip" onclick="useChip(this)">📖 How does Mukando work?</div>
+    <div class="wa-chip" onclick="useChip(this)">🛒 Explain grocery rounds</div>
+  </div>
+
+  <!-- INPUT BAR -->
+  <div class="wa-bar">
+    <div class="wa-input-pill">
+      <button class="pill-icon-btn" onclick="addEmoji()" title="Emoji">😊</button>
+      <textarea id="wa-input" rows="1" placeholder="Message MukandoAI" maxlength="500"></textarea>
+      <button class="pill-icon-btn" title="Attach">📎</button>
+    </div>
+    <div class="char-wrap"><span id="char-count">0/500</span></div>
+    <button class="wa-send mic" id="wa-send" onclick="sendMessage()">🎤</button>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const input   = document.getElementById('wa-input');
+const sendBtn = document.getElementById('wa-send');
+const msgs    = document.getElementById('wa-messages');
+const CSRF    = '{{ csrf_token }}';
+let   msgN    = 0;
+let   scrolled = false;
+
+// Init
+document.getElementById('init-time').textContent = now();
+document.getElementById('chat-date').textContent =
+  new Date().toLocaleDateString([], { weekday:'long', month:'long', day:'numeric' });
+
+// ── Input events ──────────────────────────────────────────────
+input.addEventListener('input', () => {
+  input.style.height = 'auto';
+  input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+  const len = input.value.length;
+  const cc  = document.getElementById('char-count');
+  cc.textContent = len + '/500';
+  cc.classList.toggle('show', len > 0);
+  cc.classList.toggle('warn', len > 450);
+  // Swap mic <→ send icon
+  const hasText = len > 0;
+  sendBtn.innerHTML = hasText ? '➤' : '🎤';
+  sendBtn.style.color = hasText ? '#fff' : '';
+  sendBtn.classList.toggle('mic', !hasText);
+});
+
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+
+msgs.addEventListener('scroll', () => {
+  const atBottom = msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 60;
+  scrolled = !atBottom;
+  document.getElementById('scroll-pill').classList.toggle('show', scrolled && msgN > 2);
+});
+
+// ── Helpers ───────────────────────────────────────────────────
+function now() { return new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); }
+
+function scrollBottom(force) {
+  if (force || !scrolled) {
+    msgs.scrollTop = msgs.scrollHeight;
+    document.getElementById('scroll-pill').classList.remove('show');
+    scrolled = false;
+  }
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function format(text) {
+  return esc(text)
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/`(.*?)`/g, '<code>$1</code>')
+    .replace(/\n/g, '<br/>');
+}
+
+// ── Add messages ──────────────────────────────────────────────
+function addOut(text) {
+  msgN++;
+  const id  = 'tick-' + msgN;
+  const row = document.createElement('div');
+  row.className = 'wa-row out';
+  row.innerHTML = `
+    <div class="wa-bubble">
+      ${format(text)}
+      <div class="wa-foot">
+        <span>${now()}</span>
+        <span class="ticks" id="${id}">✓</span>
+      </div>
+    </div>`;
+  msgs.appendChild(row);
+  scrollBottom();
+  setTimeout(() => {
+    const t = document.getElementById(id);
+    if (t) t.textContent = '✓✓';
+  }, 500);
+}
+
+function addIn(text) {
+  if (msgN >= 1) document.getElementById('wa-chips').style.display = 'none';
+  const row = document.createElement('div');
+  row.className = 'wa-row in';
+  row.innerHTML = `
+    <div class="wa-bubble">
+      <div class="wa-sender">MukandoAI</div>
+      ${format(text)}
+      <div class="wa-foot">
+        <span>${now()}</span>
+        <span class="ticks">✓✓</span>
+      </div>
+    </div>`;
+  msgs.appendChild(row);
+  scrollBottom();
+}
+
+function showTyping() {
+  const row = document.createElement('div');
+  row.id    = 'typing';
+  row.className = 'wa-row in typing-row';
+  row.innerHTML = `<div class="typing-bubble"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div>`;
+  msgs.appendChild(row);
+  scrollBottom();
+}
+function hideTyping() { document.getElementById('typing')?.remove(); }
+
+// ── Send ──────────────────────────────────────────────────────
+async function sendMessage() {
+  const text = input.value.trim();
+  if (!text || sendBtn.disabled) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  document.getElementById('char-count').classList.remove('show');
+  sendBtn.innerHTML = '🎤';
+  sendBtn.classList.add('mic');
+  sendBtn.style.color = '';
+
+  addOut(text);
+  sendBtn.disabled = true;
+  showTyping();
+
+  try {
+    const r = await fetch('/api/ai-chat/', {
+      method:      'POST',
+      headers:     { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body:        JSON.stringify({ message: text }),
+      credentials: 'include',
+    });
+    const d = await r.json();
+    hideTyping();
+    addIn(d.response || 'Sorry, something went wrong. Please try again. 🙏');
+  } catch {
+    hideTyping();
+    addIn('Network error — please check your connection.');
+  } finally {
+    sendBtn.disabled = false;
+    input.focus();
+  }
+}
+
+function useChip(el) {
+  const text = el.textContent.replace(/^[\u{1F300}-\u{1F9FF}\s]+/u, '').trim();
+  input.value = text;
+  input.dispatchEvent(new Event('input'));
+  sendMessage();
+}
+
+function addEmoji() {
+  const list = ['😊','🙏','👍','💰','📅','✅','🇿🇼','🤝','💪','🎉'];
+  input.value += list[Math.floor(Math.random() * list.length)];
+  input.dispatchEvent(new Event('input'));
+  input.focus();
+}
+
+setTimeout(() => input.focus(), 300);
+</script>
+{% endblock %}

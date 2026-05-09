@@ -1,0 +1,21 @@
+{% extends 'rounds/base.html' %}
+{% block title %}Join Group{% endblock %}
+{% block page_title %}🔗 Join Group{% endblock %}
+{% block nav_join %}active{% endblock %}
+{% block content %}
+<div style="max-width:400px">
+  <div class="card">
+    <div class="card-header"><span class="card-title">Join with Invite Code</span></div>
+    <p style="color:var(--muted);font-size:0.875rem;margin-bottom:20px">Ask your group admin for the 12-character invite code.</p>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Invite Code</label>
+        <input name="invite_code" class="form-control" placeholder="e.g. ABCD1234WXYZ" maxlength="12"
+          style="font-family:'Syne',sans-serif;font-size:1.1rem;letter-spacing:3px;text-transform:uppercase" required/>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;padding:12px">Join Group →</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

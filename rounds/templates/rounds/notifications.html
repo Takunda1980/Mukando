@@ -1,0 +1,149 @@
+{% extends 'rounds/base.html' %}
+
+{% block title %}Notifications{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+{% block page_subtitle %}Your alerts and updates{% endblock %}
+
+{% block content %}
+<style>
+  .notif-card {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  margin-bottom: 10px;
+  background: black;
+  border: 1px solid orange;
+  transition: 0.2s ease;
+}
+
+.notif-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.notif-card.unread {
+  border-left: 4px solid #4f46e5;
+  background: #f9faff;
+}
+
+.notif-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  border-radius: 12px;
+  background: black;
+}
+
+.notif-content {
+  flex: 1;
+}
+
+.notif-title {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.unread-dot {
+  width: 8px;
+  height: 8px;
+  background: #4f46e5;
+  border-radius: 50%;
+}
+
+.notif-message {
+  font-size: 0.85rem;
+  color: white;
+  margin-top: 3px;
+}
+
+.notif-group {
+  font-size: 0.75rem;
+  margin-top: 6px;
+  color: #4f46e5;
+  font-weight: 600;
+}
+
+.notif-time {
+  font-size: 0.75rem;
+  color: #999;
+  white-space: nowrap;
+}
+</style>
+<div class="container" style="max-width:700px;margin:0 auto;">
+
+  <div class="card">
+
+    <div class="card-header">
+      <span class="card-title">🔔 All Notifications</span>
+      <span class="badge badge-member">{{ notifications|length }}</span>
+    </div>
+
+    {% if notifications %}
+
+      {% for notif in notifications %}
+      <div class="notif-card {% if not notif.is_read %}unread{% endif %}">
+
+        <div class="notif-icon">
+          {% if notif.notification_type == 'payout' %}
+            💸
+          {% elif notif.notification_type == 'contribution' %}
+            💰
+          {% elif notif.notification_type == 'missed' %}
+            ⚠️
+          {% elif notif.notification_type == 'welcome' %}
+            🎉
+          {% elif notif.notification_type == 'payment_due' %}
+            ⏰
+          {% else %}
+            🔔
+          {% endif %}
+        </div>
+
+        <div class="notif-content">
+
+          <div class="notif-title">
+            {{ notif.title }}
+            {% if not notif.is_read %}
+              <span class="unread-dot"></span>
+            {% endif %}
+          </div>
+
+          <div class="notif-message">
+            {{ notif.message }}
+          </div>
+
+          {% if notif.group %}
+          <div class="notif-group">
+            🏦 {{ notif.group.name }}
+          </div>
+          {% endif %}
+
+        </div>
+
+        <div class="notif-time">
+          {{ notif.created_at|timesince }} ago
+        </div>
+
+      </div>
+      {% endfor %}
+
+    {% else %}
+
+      <div class="empty-state">
+        <div class="empty-icon">🔔</div>
+        <h3>All caught up!</h3>
+        <p>No notifications at the moment.</p>
+      </div>
+
+    {% endif %}
+
+  </div>
+
+</div>
+{% endblock %}

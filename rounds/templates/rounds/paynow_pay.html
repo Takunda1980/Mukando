@@ -1,0 +1,210 @@
+{% extends 'rounds/base.html' %}
+{% block title %}Pay — {{ contribution.group.name }}{% endblock %}
+
+{% block extra_head %}
+<style>
+.pn-wrap { max-width:520px; margin:32px auto; padding:0 16px 60px; }
+
+/* Test mode banner */
+.pn-sandbox-bar { display:flex; align-items:center; gap:10px; padding:10px 16px; background:rgba(245,166,35,0.08); border:1px solid rgba(245,166,35,0.25); border-radius:10px; margin-bottom:20px; font-size:0.78rem; color:var(--accent,#f5a623); font-family:'JetBrains Mono',monospace; }
+.pn-sandbox-dot { width:8px; height:8px; border-radius:50%; background:var(--accent,#f5a623); animation:pulse-dot 1.6s infinite; flex-shrink:0; }
+@keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+
+/* Amount hero */
+.pn-hero { background:linear-gradient(135deg,#0f2a1e 0%,#1a3d2b 100%); border:1px solid rgba(16,214,142,0.15); border-radius:20px; padding:28px 24px; margin-bottom:16px; position:relative; overflow:hidden; }
+.pn-hero::before { content:''; position:absolute; top:-60px; right:-60px; width:200px; height:200px; border-radius:50%; background:radial-gradient(circle,rgba(16,214,142,0.08) 0%,transparent 70%); }
+.pn-hero-label { font-size:0.65rem; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.4); font-family:'JetBrains Mono',monospace; margin-bottom:6px; }
+.pn-hero-amount { font-family:'Syne',sans-serif; font-size:3rem; font-weight:800; color:#fff; letter-spacing:-0.04em; line-height:1; margin-bottom:14px; }
+.pn-hero-amount sup { font-size:1.3rem; vertical-align:super; opacity:0.7; }
+.pn-hero-meta { display:flex; gap:14px; flex-wrap:wrap; font-size:0.8rem; color:rgba(255,255,255,0.5); padding-top:14px; border-top:1px solid rgba(255,255,255,0.07); }
+.pn-hero-meta span { display:flex; align-items:center; gap:5px; }
+.pn-due-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:0.7rem; font-family:'JetBrains Mono',monospace; background:rgba(16,214,142,0.12); color:#10d68e; border:1px solid rgba(16,214,142,0.2); margin-bottom:10px; }
+
+/* Transaction summary card */
+.pn-summary { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:16px; }
+.pn-summary-title { font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); font-family:'JetBrains Mono',monospace; padding:12px 16px 8px; }
+.pn-summary-row { display:flex; justify-content:space-between; align-items:center; padding:10px 16px; border-top:1px solid var(--border); font-size:0.85rem; }
+.pn-summary-row:first-of-type { border-top:none; }
+.pn-summary-key { color:var(--muted); }
+.pn-summary-val { font-weight:600; }
+.pn-summary-total { background:rgba(16,214,142,0.06); }
+.pn-summary-total .pn-summary-val { color:#10d68e; font-size:1rem; font-weight:800; }
+
+/* Payment methods */
+.pn-methods-label { font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); font-family:'JetBrains Mono',monospace; margin-bottom:10px; }
+.pn-methods-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:20px; }
+.pn-method { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:12px; padding:10px 4px 8px; text-align:center; transition:all 0.2s; }
+.pn-method:hover { background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.15); transform:translateY(-2px); }
+.pn-method-icon { font-size:1.3rem; line-height:1; margin-bottom:4px; }
+.pn-method-name { font-size:0.58rem; font-weight:700; color:var(--text2); line-height:1.2; }
+
+/* Confirmation step */
+.pn-confirm-step { display:none; }
+.pn-confirm-step.active { display:block; }
+.pn-init-step.hidden { display:none; }
+
+.confirm-banner { background:rgba(245,166,35,0.08); border:1px solid rgba(245,166,35,0.25); border-radius:12px; padding:14px 16px; margin-bottom:16px; font-size:0.85rem; }
+.confirm-banner strong { color:var(--accent); }
+
+/* CTA button */
+.pn-btn { width:100%; padding:15px; background:linear-gradient(135deg,#10d68e,#0dba7a); color:#000; border:none; border-radius:14px; font-family:'Syne',sans-serif; font-size:1rem; font-weight:800; cursor:pointer; letter-spacing:-0.01em; position:relative; overflow:hidden; transition:all 0.25s; display:flex; align-items:center; justify-content:center; gap:10px; }
+.pn-btn::before { content:''; position:absolute; top:0; left:-100%; bottom:0; right:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent); transition:left 0.5s; }
+.pn-btn:hover::before { left:100%; }
+.pn-btn:hover { transform:translateY(-2px); box-shadow:0 10px 32px rgba(16,214,142,0.3); }
+.pn-btn:active { transform:scale(0.98); }
+.pn-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+.pn-btn-secondary { width:100%; padding:12px; background:transparent; color:var(--text2); border:1px solid var(--border); border-radius:12px; font-family:inherit; font-size:0.875rem; cursor:pointer; margin-top:10px; transition:all 0.2s; }
+.pn-btn-secondary:hover { border-color:var(--accent); color:var(--accent); }
+
+/* Trust strip */
+.pn-trust { display:flex; align-items:center; justify-content:center; gap:16px; margin-top:12px; font-size:0.7rem; color:var(--muted); font-family:'JetBrains Mono',monospace; }
+.pn-trust-item { display:flex; align-items:center; gap:4px; }
+
+/* Errors */
+.pn-error { background:rgba(255,71,87,0.08); border:1px solid rgba(255,71,87,0.2); border-radius:10px; padding:12px 14px; font-size:0.83rem; color:#ff4757; margin-bottom:16px; display:flex; align-items:flex-start; gap:8px; }
+.pn-not-configured { background:rgba(255,71,87,0.05); border:1px solid rgba(255,71,87,0.15); border-radius:14px; padding:24px; text-align:center; color:var(--text2); }
+
+.pn-back { display:block; text-align:center; margin-top:18px; font-size:0.78rem; color:var(--muted); text-decoration:none; transition:color 0.2s; }
+.pn-back:hover { color:var(--text2); }
+
+@media(max-width:480px){ .pn-methods-grid{grid-template-columns:repeat(3,1fr)} .pn-hero-amount{font-size:2.5rem} }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pn-wrap">
+
+  
+
+  <!-- Amount hero -->
+  <div class="pn-hero">
+    <div class="pn-hero-label">Amount due</div>
+    <div class="pn-hero-amount"><sup>$</sup>{{ contribution.amount }}</div>
+    <div class="pn-due-pill">📅 Due {{ contribution.due_date }}</div>
+    <div class="pn-hero-meta">
+      <span>🏦 {{ contribution.group.name }}</span>
+      <span>📅 {{ contribution.cycle_date|date:"F Y" }}</span>
+    </div>
+  </div>
+
+  {% if paynow_enabled %}
+
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="pn-error">⚠ {{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- STEP 1: Review & confirm -->
+    <div id="step-init" class="pn-init-step">
+
+      <!-- Transaction summary -->
+      <div class="pn-summary">
+        <div class="pn-summary-title">Transaction Summary</div>
+        <div class="pn-summary-row">
+          <span class="pn-summary-key">Group</span>
+          <span class="pn-summary-val">{{ contribution.group.name }}</span>
+        </div>
+        <div class="pn-summary-row">
+          <span class="pn-summary-key">Period</span>
+          <span class="pn-summary-val">{{ contribution.cycle_date|date:"F Y" }}</span>
+        </div>
+        <div class="pn-summary-row">
+          <span class="pn-summary-key">Due Date</span>
+          <span class="pn-summary-val">{{ contribution.due_date }}</span>
+        </div>
+        <div class="pn-summary-row">
+          <span class="pn-summary-key">Payment Method</span>
+          <span class="pn-summary-val">PayNow Zimbabwe</span>
+        </div>
+        <div class="pn-summary-row pn-summary-total">
+          <span class="pn-summary-key" style="font-weight:700;">Total</span>
+          <span class="pn-summary-val">${{ contribution.amount }} USD</span>
+        </div>
+      </div>
+
+      <!-- Payment methods -->
+      <div class="pn-methods-label">Accepted payment methods</div>
+      <div class="pn-methods-grid">
+        {% for method in payment_methods %}
+        <div class="pn-method">
+          <div class="pn-method-icon">{{ method.icon }}</div>
+          <div class="pn-method-name">{{ method.name }}</div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Review button -->
+      <button type="button" class="pn-btn" onclick="showConfirm()">
+        <span>🔒</span> Review & Confirm Payment
+      </button>
+      <div class="pn-trust">
+        <span class="pn-trust-item">🔒 256-bit SSL</span>
+        <span class="pn-trust-item">⚡ Instant confirmation</span>
+        <span class="pn-trust-item">🏦 PayNow Zimbabwe</span>
+      </div>
+    </div>
+
+    <!-- STEP 2: Confirmation screen -->
+    <div id="step-confirm" class="pn-confirm-step">
+      <div class="confirm-banner">
+        <strong>⚠️ Please confirm your payment</strong><br>
+        You're about to send <strong>${{ contribution.amount }}</strong> for
+        <strong>{{ contribution.group.name }}</strong>. You will be redirected to
+        PayNow's secure checkout. This action cannot be undone once payment is completed.
+      </div>
+
+      <div class="pn-summary" style="margin-bottom:16px;">
+        <div class="pn-summary-row pn-summary-total" style="border-top:none;">
+          <span class="pn-summary-key" style="font-weight:700;">Confirming payment of</span>
+          <span class="pn-summary-val">${{ contribution.amount }} USD</span>
+        </div>
+      </div>
+
+      <form method="POST" id="pn-form">
+        {% csrf_token %}
+        <button type="submit" class="pn-btn" id="pn-submit-btn">
+          <span>✅</span> Confirm — Pay ${{ contribution.amount }}
+        </button>
+      </form>
+      <button type="button" class="pn-btn-secondary" onclick="cancelConfirm()">
+        ← Go Back &amp; Review
+      </button>
+    </div>
+
+  {% else %}
+    <div class="pn-not-configured">
+      <div style="font-size:2rem;margin-bottom:10px;">⚙️</div>
+      <strong>PayNow not configured</strong>
+      <p style="margin-top:8px;font-size:0.82rem;">Contact your group administrator or use another payment method.</p>
+      <p style="margin-top:8px;font-size:0.72rem;opacity:0.5;font-family:'JetBrains Mono',monospace;">Admin: set PAYNOW_INTEGRATION_ID + PAYNOW_INTEGRATION_KEY in .env</p>
+    </div>
+  {% endif %}
+
+  <a href="{% url 'group_detail' contribution.group.pk %}" class="pn-back">← Back to group</a>
+</div>
+
+<script>
+function showConfirm() {
+  document.getElementById('step-init').classList.add('hidden');
+  document.getElementById('step-confirm').classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function cancelConfirm() {
+  document.getElementById('step-confirm').classList.remove('active');
+  document.getElementById('step-init').classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Prevent double-submit
+document.getElementById('pn-form')?.addEventListener('submit', function() {
+  const btn = document.getElementById('pn-submit-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span style="opacity:0.6">⏳</span> Redirecting to PayNow…';
+  }
+});
+</script>
+{% endblock %}

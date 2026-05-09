@@ -1,0 +1,137 @@
+{% extends 'rounds/base.html' %}
+
+{% block title %}Create Group{% endblock %}
+{% block page_title %}Create Group{% endblock %}
+{% block page_subtitle %}Start a new Mukando or Stokvel circle{% endblock %}
+
+{% block content %}
+<style>
+  .form-section {
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #111827;
+  letter-spacing: 0.2px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+}
+</style>
+
+<div class="container" style="max-width:640px;margin:0 auto;">
+
+  <div class="card">
+
+    <div class="card-header">
+      <span class="card-title">🏦 New Savings Group</span>
+      <a href="{% url 'group_list' %}" class="btn btn-outline btn-sm">← Back</a>
+    </div>
+
+    <div class="card-body">
+
+      <form method="post" data-validate>
+        {% csrf_token %}
+
+        <!-- Group Name -->
+        <div class="form-group">
+          <label class="form-label">Group Name <span class="required">*</span></label>
+          <input type="text"
+                 name="name"
+                 class="form-control"
+                 placeholder="e.g. Harare Ladies Mukando 2024"
+                 required
+                 value="{{ form_data.name|default:'' }}">
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea name="description"
+                    class="form-control"
+                    placeholder="Briefly describe the group's purpose, rules, or location...">{{ form_data.description|default:'' }}</textarea>
+        </div>
+
+        <!-- Grid Section -->
+        <div class="grid-2">
+
+          <!-- Contribution -->
+          <div class="form-group">
+            <label class="form-label">Contribution Amount (USD) <span class="required">*</span></label>
+            <input type="number"
+                   name="contribution_amount"
+                   class="form-control"
+                   placeholder="e.g. 50"
+                   min="0.01"
+                   step="0.01"
+                   required
+                   value="{{ form_data.contribution_amount|default:'' }}">
+            <span class="form-hint">Amount each member contributes per cycle.</span>
+          </div>
+
+          <!-- Cycle -->
+          <div class="form-group">
+            <label class="form-label">Cycle Period <span class="required">*</span></label>
+            <select name="cycle_period" class="form-control">
+
+              <option value="weekly" {% if form_data.cycle_period == 'weekly' %}selected{% endif %}>
+                Weekly
+              </option>
+
+              <option value="biweekly" {% if form_data.cycle_period == 'biweekly' %}selected{% endif %}>
+                Bi-Weekly
+              </option>
+
+              <option value="monthly" {% if form_data.cycle_period != 'weekly' and form_data.cycle_period != 'biweekly' %}selected{% endif %}>
+                Monthly
+              </option>
+
+            </select>
+          </div>
+
+        </div>
+
+        <!-- Start Date -->
+        <div class="form-group">
+          <label class="form-label">Start Date <span class="required">*</span></label>
+          <input type="date"
+                 name="start_date"
+                 class="form-control"
+                 required
+                 value="{{ form_data.start_date|default:'' }}">
+          <span class="form-hint">The date of the first contribution cycle.</span>
+        </div>
+
+        <!-- Info Box -->
+        <div class="alert alert-info">
+          ℹ️ You will be assigned as <strong>Admin</strong>. An invite code will be generated automatically and can be shared with members.
+        </div>
+
+        <!-- Buttons -->
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-lg">
+            Create Group →
+          </button>
+
+          <a href="{% url 'group_list' %}" class="btn btn-outline btn-lg">
+            Cancel
+          </a>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

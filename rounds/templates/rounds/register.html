@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Create Account — Mukando</title>
+{% load static %}
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --void:#030508;--glass:rgba(12,18,32,0.85);--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --text:#f0f4ff;--text2:#a8b4c8;--muted:#4a5568;
+  --amber:#f5a623;--amber-g:rgba(245,166,35,0.1);--ruby:#ff4757;--emerald:#10d68e;
+  --f-d:'Syne',sans-serif;--f-b:'Plus Jakarta Sans',sans-serif;--f-m:'JetBrains Mono',monospace;
+  --ease-out:cubic-bezier(0.16,1,0.3,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--f-b);background:var(--void);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;overflow-x:hidden}
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.35}
+
+.wrap{position:relative;z-index:1;width:100%;max-width:900px;display:grid;grid-template-columns:1fr 1.1fr;gap:0;border-radius:24px;overflow:hidden;border:1px solid var(--border);box-shadow:0 40px 120px rgba(0,0,0,0.6);animation:rise 0.6s var(--ease-out) both}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.side-info{padding:48px 40px;background:linear-gradient(145deg,rgba(245,166,35,0.06) 0%,rgba(12,18,32,0.9) 60%);border-right:1px solid var(--border);display:flex;flex-direction:column;justify-content:center}
+.side-brand{display:flex;align-items:center;gap:10px;margin-bottom:40px}
+.side-gem{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--amber),#c47d0e);display:flex;align-items:center;justify-content:center;font-family:var(--f-d);font-weight:800;font-size:1rem;color:#000;box-shadow:0 0 24px var(--amber-g)}
+.side-name{font-family:var(--f-d);font-size:1.2rem;font-weight:800;letter-spacing:-0.03em}
+.side-name em{color:var(--amber);font-style:normal}
+.side-title{font-family:var(--f-d);font-size:1.6rem;font-weight:800;letter-spacing:-0.03em;line-height:1.2;margin-bottom:16px}
+.side-title em{color:var(--amber);font-style:normal}
+.side-sub{font-size:0.85rem;color:var(--text2);line-height:1.7;margin-bottom:32px}
+.perks{display:flex;flex-direction:column;gap:12px}
+.perk{display:flex;align-items:center;gap:10px;font-size:0.82rem;color:var(--text2);animation:fadeUp 0.5s var(--ease-out) both}
+.perk-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0}
+
+.form-panel{padding:40px 40px;background:var(--glass);backdrop-filter:blur(30px)}
+.form-title{font-family:var(--f-d);font-size:1.4rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:4px}
+.form-sub{font-size:0.82rem;color:var(--text2);margin-bottom:24px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{margin-bottom:14px;position:relative}
+.form-label{display:block;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text2);margin-bottom:6px;font-family:var(--f-m)}
+.form-control{width:100%;padding:10px 13px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:var(--f-b);font-size:0.87rem;outline:none;transition:all 0.2s var(--ease-out)}
+.form-control:focus{border-color:var(--amber);background:rgba(245,166,35,0.04);box-shadow:0 0 0 3px rgba(245,166,35,0.1)}
+.form-control::placeholder{color:var(--muted)}
+.form-control.valid{border-color:var(--emerald)!important;background:rgba(16,214,142,0.04)!important}
+.form-control.invalid{border-color:var(--ruby)!important;background:rgba(255,71,87,0.04)!important}
+select.form-control{cursor:pointer}
+.btn-submit{width:100%;padding:12px;background:var(--amber);color:#000;border:none;border-radius:10px;font-family:var(--f-d);font-size:0.9rem;font-weight:800;cursor:pointer;transition:all 0.2s var(--ease-out);margin-top:6px;letter-spacing:-0.01em}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(245,166,35,0.35)}
+.btn-submit:active{transform:scale(0.98)}
+.alert{padding:10px 13px;border-radius:9px;background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.2);color:var(--ruby);font-size:0.8rem;margin-bottom:16px;display:flex;align-items:center;gap:7px}
+.auth-footer{text-align:center;font-size:0.8rem;color:var(--text2);margin-top:16px}
+.auth-footer a{color:var(--amber);font-weight:600}
+.divider{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--muted);font-size:0.72rem;font-family:var(--f-m)}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* Inline validation hints */
+.field-hint{font-size:0.7rem;margin-top:4px;min-height:16px;font-family:var(--f-m);transition:all 0.2s;display:flex;align-items:center;gap:4px}
+.field-hint.ok{color:var(--emerald)}
+.field-hint.err{color:var(--ruby)}
+.field-hint.idle{color:transparent}
+
+/* Strength meter */
+.pw-strength{height:3px;border-radius:3px;background:var(--border);margin-top:6px;overflow:hidden}
+.pw-strength-bar{height:100%;border-radius:3px;transition:all 0.3s;width:0}
+
+@media(max-width:680px){.wrap{grid-template-columns:1fr}.side-info{display:none}}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="wrap">
+  <div class="side-info">
+    <div class="side-brand">
+      <div class="side-gem">M</div>
+      <div class="side-name">Mu<em>kando</em></div>
+    </div>
+    <div class="side-title">Join Zimbabwe's <em>smartest</em> savings platform</div>
+    <div class="side-sub">Create your account and start managing your savings groups in minutes. Free forever.</div>
+    <div class="perks">
+      <div class="perk" style="animation-delay:0.1s"><div class="perk-icon" style="background:rgba(16,214,142,0.1);color:#10d68e;">✓</div>Create unlimited savings groups</div>
+      <div class="perk" style="animation-delay:0.2s"><div class="perk-icon" style="background:rgba(245,166,35,0.1);color:#f5a623;">✓</div>Pay via EcoCash or PayNow</div>
+      <div class="perk" style="animation-delay:0.3s"><div class="perk-icon" style="background:rgba(79,172,254,0.1);color:#4facfe;">✓</div>AI assistant in English, Shona & Ndebele</div>
+      <div class="perk" style="animation-delay:0.4s"><div class="perk-icon" style="background:rgba(255,71,87,0.1);color:#ff4757;">✓</div>Automated payout scheduling</div>
+    </div>
+  </div>
+
+  <div class="form-panel">
+    <div class="form-title">Create account</div>
+    <div class="form-sub">Already have one? <a href="{% url 'login' %}" style="color:var(--amber);font-weight:600;">Sign in</a></div>
+
+    {% for msg in messages %}<div class="alert">⚠ {{ msg }}</div>{% endfor %}
+
+    <form method="post" id="reg-form" novalidate>
+      {% csrf_token %}
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">First Name</label>
+          <input name="first_name" class="form-control" placeholder="Takunda"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name</label>
+          <input name="last_name" class="form-control" placeholder="Mukarati"/>
+        </div>
+      </div>
+
+      <!-- Username with live validation -->
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input name="username" id="f-username" class="form-control" placeholder="takunda_m" required autocomplete="username"/>
+        <div class="field-hint idle" id="hint-username"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input name="email" type="email" class="form-control" placeholder="takunda@mukando.app"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone Number</label>
+        <input name="phone" class="form-control" placeholder="0771234567"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Language</label>
+        <select name="preferred_language" class="form-control">
+          <option value="en">English</option>
+          <option value="sn">Shona (ChiShona)</option>
+          <option value="nd">Ndebele (IsiNdebele)</option>
+        </select>
+      </div>
+
+      <div class="divider">security</div>
+
+      <!-- Password with live validation + strength meter -->
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input name="password" id="f-password" type="password" class="form-control" placeholder="••••••••" required autocomplete="new-password"/>
+        <div class="pw-strength"><div class="pw-strength-bar" id="pw-bar"></div></div>
+        <div class="field-hint idle" id="hint-password"></div>
+      </div>
+
+      <!-- Confirm password with live match check -->
+      <div class="form-group">
+        <label class="form-label">Confirm Password</label>
+        <input name="password2" id="f-password2" type="password" class="form-control" placeholder="••••••••" required autocomplete="new-password"/>
+        <div class="field-hint idle" id="hint-password2"></div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="reg-submit">Create My Account →</button>
+    </form>
+    <div class="auth-footer">By signing up you agree to our terms of service.</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ── Background particle canvas ────────────────────────────────────────────────
+(function(){
+  const canvas = document.getElementById('bg-canvas');
+  if (typeof THREE === 'undefined') return;
+  const renderer = new THREE.WebGLRenderer({canvas,alpha:true,antialias:false});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
+  renderer.setClearColor(0,0);
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(60,1,0.1,1000);
+  camera.position.z = 80;
+  const count=100, geo=new THREE.BufferGeometry(), pos=new Float32Array(count*3);
+  for(let i=0;i<count;i++){pos[i*3]=(Math.random()-.5)*200;pos[i*3+1]=(Math.random()-.5)*200;pos[i*3+2]=(Math.random()-.5)*80;}
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  scene.add(new THREE.Points(geo,new THREE.PointsMaterial({color:0xf5a623,size:0.5,transparent:true,opacity:0.3})));
+  function resize(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
+  resize();window.addEventListener('resize',resize);
+  let t=0;(function animate(){requestAnimationFrame(animate);t+=0.003;scene.rotation.y=t*0.04;renderer.render(scene,camera);})();
+})();
+
+// ── Client-side validation (mirrors server rules) ─────────────────────────────
+const USERNAME_RE = /^[a-zA-Z][a-zA-Z0-9_]*$/;
+
+function setHint(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = (type === 'ok' ? '✓ ' : type === 'err' ? '✗ ' : '') + msg;
+  el.className = 'field-hint ' + type;
+}
+function setField(id, valid) {
+  const el = document.getElementById(id);
+  el.classList.remove('valid','invalid');
+  if (valid === true)  el.classList.add('valid');
+  if (valid === false) el.classList.add('invalid');
+}
+
+// Username validation
+document.getElementById('f-username').addEventListener('input', function() {
+  const v = this.value;
+  if (!v) { setHint('hint-username','',  'idle'); setField('f-username', null); return; }
+  if (!/^[a-zA-Z]/.test(v)) {
+    setHint('hint-username', 'Must start with a letter', 'err');
+    setField('f-username', false); return;
+  }
+  if (!USERNAME_RE.test(v)) {
+    setHint('hint-username', 'Only letters, numbers, underscores', 'err');
+    setField('f-username', false); return;
+  }
+  setHint('hint-username', 'Username looks good', 'ok');
+  setField('f-username', true);
+});
+
+// Password validation + strength meter
+document.getElementById('f-password').addEventListener('input', function() {
+  const v = this.value;
+  const bar = document.getElementById('pw-bar');
+  if (!v) {
+    setHint('hint-password','','idle'); setField('f-password', null);
+    bar.style.width='0'; bar.style.background='transparent'; return;
+  }
+  // Check rules in priority order
+  if (v.length < 8) {
+    setHint('hint-password', 'At least 8 characters required', 'err');
+    setField('f-password', false);
+    bar.style.width='15%'; bar.style.background='#ff4757'; return;
+  }
+  if (!/^[a-zA-Z]/.test(v)) {
+    setHint('hint-password', 'Must start with a letter', 'err');
+    setField('f-password', false);
+    bar.style.width='25%'; bar.style.background='#ff4757'; return;
+  }
+  if (!/[A-Z]/.test(v)) {
+    setHint('hint-password', 'Add an uppercase letter', 'err');
+    setField('f-password', false);
+    bar.style.width='40%'; bar.style.background='#ff4757'; return;
+  }
+  if (!/[a-z]/.test(v)) {
+    setHint('hint-password', 'Add a lowercase letter', 'err');
+    setField('f-password', false);
+    bar.style.width='50%'; bar.style.background='#ffa500'; return;
+  }
+  if (!/[0-9]/.test(v)) {
+    setHint('hint-password', 'Add a number', 'err');
+    setField('f-password', false);
+    bar.style.width='65%'; bar.style.background='#ffa500'; return;
+  }
+  // All rules pass — score strength
+  let score = 0;
+  if (v.length >= 12) score++;
+  if (/[^a-zA-Z0-9]/.test(v)) score++;
+  const widths = ['75%','88%','100%'];
+  const colors = ['#f5a623','#10d68e','#10d68e'];
+  bar.style.width  = widths[score]  || '75%';
+  bar.style.background = colors[score] || '#f5a623';
+  setHint('hint-password', score >= 1 ? 'Strong password ✓' : 'Password meets requirements', 'ok');
+  setField('f-password', true);
+
+  // Re-check confirm match if already typed
+  checkMatch();
+});
+
+// Confirm password match
+function checkMatch() {
+  const pw  = document.getElementById('f-password').value;
+  const pw2 = document.getElementById('f-password2').value;
+  if (!pw2) return;
+  if (pw === pw2) {
+    setHint('hint-password2', 'Passwords match', 'ok');
+    setField('f-password2', true);
+  } else {
+    setHint('hint-password2', 'Passwords do not match', 'err');
+    setField('f-password2', false);
+  }
+}
+document.getElementById('f-password2').addEventListener('input', checkMatch);
+
+// Block submit if client-side checks fail
+document.getElementById('reg-form').addEventListener('submit', function(e) {
+  const username = document.getElementById('f-username').value;
+  const password = document.getElementById('f-password').value;
+  const password2 = document.getElementById('f-password2').value;
+
+  let blocked = false;
+
+  if (!USERNAME_RE.test(username) || !/^[a-zA-Z]/.test(username)) {
+    setHint('hint-username', 'Fix username before submitting', 'err');
+    setField('f-username', false);
+    blocked = true;
+  }
+  if (password.length < 8 || !/^[a-zA-Z]/.test(password) ||
+      !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+    setHint('hint-password', 'Fix password before submitting', 'err');
+    setField('f-password', false);
+    blocked = true;
+  }
+  if (password !== password2) {
+    setHint('hint-password2', 'Passwords do not match', 'err');
+    setField('f-password2', false);
+    blocked = true;
+  }
+  if (blocked) { e.preventDefault(); return; }
+
+  // Disable button to prevent double submit
+  document.getElementById('reg-submit').disabled = true;
+  document.getElementById('reg-submit').textContent = 'Creating account…';
+});
+</script>
+</body>
+</html>

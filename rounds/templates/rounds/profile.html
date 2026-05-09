@@ -1,0 +1,112 @@
+{% extends 'rounds/base.html' %}
+{% block title %}Profile{% endblock %}
+{% block page_title %}Profile{% endblock %}
+{% block page_subtitle %}Manage your account settings{% endblock %}
+
+{% block content %}
+<div style="max-width:620px;margin:0 auto">
+
+  <!-- Avatar card -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-body" style="display:flex;align-items:center;gap:20px">
+      <div style="width:72px;height:72px;border-radius:50%;background:var(--color-primary);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;font-size:1.8rem;color:#fff;flex-shrink:0">
+        {{ request.user.profile.avatar_initials|default:request.user.username|slice:":2"|upper }}
+      </div>
+      <div>
+        <h2 style="font-family:var(--font-display);font-weight:800;margin-bottom:4px">
+          {{ request.user.get_full_name|default:request.user.username }}
+        </h2>
+        <p style="color:var(--text-muted);font-size:0.875rem">@{{ request.user.username }}</p>
+        <p style="color:var(--text-muted);font-size:0.8rem">Member since {{ request.user.date_joined|date:"M Y" }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit form -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">✏️ Edit Profile</span>
+    </div>
+    <div class="card-body">
+      <form method="post" data-validate>
+        {% csrf_token %}
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">First Name</label>
+            <input type="text" name="first_name" class="form-control" value="{{ request.user.first_name }}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <input type="text" name="last_name" class="form-control" value="{{ request.user.last_name }}">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" name="email" class="form-control" value="{{ request.user.email }}">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="tel" name="phone" class="form-control" value="{{ profile.phone_number }}" placeholder="+263 77 123 4567">
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Preferred Language</label>
+            <select name="language" class="form-control">
+              <option value="en" {% if profile.language == 'en' %}selected{% endif %}>🇬🇧 English</option>
+              <option value="sn" {% if profile.language == 'sn' %}selected{% endif %}>🇿🇼 Shona</option>
+              <option value="nd" {% if profile.language == 'nd' %}selected{% endif %}>🇿🇼 Ndebele</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Dark Mode</label>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:11px">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.875rem">
+                <input type="checkbox" name="dark_mode" {% if profile.dark_mode %}checked{% endif %}
+                  style="width:16px;height:16px;accent-color:var(--color-primary)">
+                Enable Dark Mode
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:8px">
+          <button type="submit" class="btn btn-primary btn-lg">Save Changes</button>
+          <a href="{% url 'dashboard' %}" class="btn btn-outline btn-lg">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="card" style="margin-top:20px">
+    <div class="card-header"><span class="card-title">📊 My Stats</span></div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center">
+        <div style="padding:16px;background:rgba(45,156,95,0.08);border-radius:12px">
+          <div style="font-family:var(--font-display);font-weight:800;font-size:1.5rem;color:var(--color-success)">{{ request.user.memberships.count }}</div>
+          <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px">Groups Joined</div>
+        </div>
+        <div style="padding:16px;background:rgba(201,80,30,0.08);border-radius:12px">
+          <div style="font-family:var(--font-display);font-weight:800;font-size:1.5rem;color:var(--color-primary)">{{ request.user.contributions.count }}</div>
+          <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px">Contributions</div>
+        </div>
+        <div style="padding:16px;background:rgba(232,160,32,0.08);border-radius:12px">
+          <div style="font-family:var(--font-display);font-weight:800;font-size:1.5rem;color:var(--color-accent)">{{ request.user.payouts.count }}</div>
+          <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px">Payouts</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Danger zone -->
+  <div style="margin-top:20px;padding:16px 20px;background:rgba(217,48,37,0.05);border-radius:14px;border:1px solid rgba(217,48,37,0.15)">
+    <h4 style="font-weight:700;color:var(--color-danger);margin-bottom:6px">⚠️ Account Actions</h4>
+    <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:12px">These actions are irreversible. Please be certain.</p>
+    <a href="{% url 'logout' %}" class="btn btn-danger btn-sm">Logout from All Devices</a>
+  </div>
+</div>
+{% endblock %}

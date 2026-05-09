@@ -1,0 +1,193 @@
+{% extends 'rounds/base.html' %}
+{% block title %}Record Contribution — {{ group.name }}{% endblock %}
+{% block page_title %}Record Contribution{% endblock %}
+{% block page_subtitle %}{{ group.name }}{% endblock %}
+
+{% block content %}
+<div style="max-width:620px;margin:0 auto;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
+
+  <div style="background:#111827;border:1px solid rgba(255,255,255,0.08);border-radius:16px;overflow:hidden">
+
+    <!-- HEADER -->
+    <div class="card-header"
+         style="padding:16px 18px;background:#0f172a;display:flex;justify-content:space-between;align-items:center">
+
+      <div>
+        <div style="font-size:16px;font-weight:700;color:#e5e7eb">
+          💰 Record Contribution
+        </div>
+        <div style="font-size:12px;color:#94a3b8">
+          {{ group.name }}
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:center">
+
+        <!-- PAY NOW BUTTON -->
+        <a href="{% url 'pay_contribution' group.pk %}"
+           style="background:#22c55e;color:#fff;padding:6px 10px;border-radius:8px;text-decoration:none;font-size:12px;font-weight:600">
+          💳 Pay Now
+        </a>
+
+        <!-- BACK -->
+        <a href="{% url 'group_detail' group.pk %}"
+           style="border:1px solid rgba(255,255,255,0.2);color:#e5e7eb;padding:6px 10px;border-radius:8px;text-decoration:none;font-size:12px">
+          ← Back
+        </a>
+
+      </div>
+
+    </div>
+
+    <!-- BODY -->
+    <div style="padding:20px;color:#e5e7eb">
+
+      <form method="post" data-validate>
+        {% csrf_token %}
+
+        <!-- MEMBER -->
+        <div style="margin-bottom:14px">
+          <label style="display:block;font-size:13px;margin-bottom:6px">
+            Member <span style="color:#ef4444">*</span>
+          </label>
+          <select name="member_id"
+                  required
+                  style="width:100%;padding:10px;border-radius:10px;background:#0f172a;border:1px solid rgba(255,255,255,0.08);color:#e5e7eb">
+            <option value="">— Select member —</option>
+            {% for m in members %}
+              <option value="{{ m.user.pk }}">
+                {{ m.user.get_full_name|default:m.user.username }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- GRID 1 -->
+        <div style="display:flex;gap:12px">
+
+          <div style="flex:1;margin-bottom:14px">
+            <label style="display:block;font-size:13px;margin-bottom:6px">
+              Amount (USD)
+            </label>
+            <input type="number"
+                   name="amount"
+                   value="{{ group.contribution_amount }}"
+                   min="0"
+                   step="0.01"
+                   required
+                   style="width:100%;padding:10px;border-radius:10px;background:#0f172a;border:1px solid rgba(255,255,255,0.08);color:#e5e7eb">
+            <div style="font-size:11px;color:#94a3b8;margin-top:4px">
+              Default: ${{ group.contribution_amount }}
+            </div>
+          </div>
+
+          <div style="flex:1;margin-bottom:14px">
+            <label style="display:block;font-size:13px;margin-bottom:6px">
+              Contribution Type
+            </label>
+            <select name="contribution_type"
+                    style="width:100%;padding:10px;border-radius:10px;background:#0f172a;border:1px solid rgba(255,255,255,0.08);color:#e5e7eb">
+              <option value="cash">Cash</option>
+              <option value="grocery">Grocery</option>
+              <option value="mixed">Mixed</option>
+            </select>
+          </div>
+
+        </div>
+
+        <!-- GRID 2 -->
+        <div style="display:flex;gap:12px">
+
+          <div style="flex:1;margin-bottom:14px">
+            <label style="display:block;font-size:13px;margin-bottom:6px">
+              Status
+            </label>
+            <select name="status"
+                    style="width:100%;padding:10px;border-radius:10px;background:#0f172a;border:1px solid rgba(255,255,255,0.08);color:#e5e7eb">
+              <option value="paid">✅ Paid</option>
+              <option value="unpaid">🔵 Unpaid</option>
+              <option value="late">⚠️ Late</option>
+              <option value="partial">🟡 Partial</option>
+            </select>
+          </div>
+
+          <div style="flex:1;margin-bottom:14px">
+            <label style="display:block;font-size:13px;margin-bottom:6px">
+              Round Number
+            </label>
+            <input type="number"
+                   name="round_number"
+                   value="{{ current_round }}"
+                   min="1"
+                   max="{{ group.total_rounds|default:99 }}"
+                   style="width:100%;padding:10px;border-radius:10px;background:#0f172a;border:1px solid rgba(255,255,255,0.08);color:#e5e7eb">
+          </div>
+
+        </div>
+
+        <!-- DATES -->
+        <div style="display:flex;gap:12px">
+
+          <div style="flex:1;margin-bottom:14px">
+            <label style="display:block;font-size:13px;margin-bottom:6px">
+              Due Date
+            </label>
+            <input type="date"
+                   name="due_date"
+                   value="{{ today }}"
+                   required
+                   style="width:100%;padding:10px;border-radius:10px;background:#0f172a;border:1px solid rgba(255,255,255,0.08);color:#e5e7eb">
+          </div>
+
+          <div style="flex:1;margin-bottom:14px">
+            <label style="display:block;font-size:13px;margin-bottom:6px">
+              Paid Date
+            </label>
+            <input type="date"
+                   name="paid_date"
+                   value="{{ today }}"
+                   style="width:100%;padding:10px;border-radius:10px;background:#0f172a;border:1px solid rgba(255,255,255,0.08);color:#e5e7eb">
+          </div>
+
+        </div>
+
+        <!-- NOTES -->
+        <div style="margin-bottom:16px">
+          <label style="display:block;font-size:13px;margin-bottom:6px">
+            Notes
+          </label>
+          <textarea name="notes"
+                    placeholder="Optional notes..."
+                    style="width:100%;padding:10px;border-radius:10px;background:#0f172a;border:1px solid rgba(255,255,255,0.08);color:#e5e7eb;min-height:80px"></textarea>
+        </div>
+
+        <!-- ACTIONS -->
+        <div style="display:flex;justify-content:space-between;align-items:center">
+
+          <div style="font-size:11px;color:#94a3b8">
+            💡 Paid contributions update group balance instantly
+          </div>
+
+          <div style="display:flex;gap:10px">
+
+            <a href="{% url 'group_detail' group.pk %}"
+               style="padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);color:#e5e7eb;text-decoration:none">
+              Cancel
+            </a>
+
+            <button type="submit"
+                    style="padding:10px 16px;border-radius:10px;background:#3b82f6;border:none;color:white;font-weight:600">
+              Save Contribution →
+            </button>
+
+          </div>
+
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}

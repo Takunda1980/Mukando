@@ -1,0 +1,165 @@
+{% extends 'rounds/base.html' %}
+{% block title %}Join Group{% endblock %}
+{% block page_title %}Join a Group{% endblock %}
+{% block page_subtitle %}Enter an invite code to join a Mukando circle{% endblock %}
+
+{% block content %}
+{% load static %}
+<style>
+  body {
+  body {
+  background: url("{% static 'images/people-bg.jpg' %}") center/cover fixed no-repeat !important;
+}
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+  .page-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+/* GRID SYSTEM */
+.group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 22px;
+}
+
+/* CARD */
+.group-card {
+  padding: 18px;
+}
+
+/* HEADER */
+.group-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.group-title {
+  font-size: 1.1rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+.group-subtitle {
+  font-size: 0.85rem;
+  color: black;
+  margin-top: 4px;
+}
+
+/* METRICS */
+.metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.metric {
+  background: orange;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.metric .label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: black;
+}
+
+.metric .value {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.metric .success {
+  color: #10b981;
+}
+
+/* PROGRESS */
+.progress {
+  height: 6px;
+  background: #eee;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4f46e5, #7c3aed);
+}
+
+/* BUTTON */
+.full-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.empty-state .icon {
+  font-size: 3.5rem;
+  margin-bottom: 10px;
+}
+
+.empty-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+}
+</style>
+<div style="max-width:480px;margin:0 auto">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">🔗 Join with Invite Code</span>
+      <a href="{% url 'group_list' %}" class="btn btn-outline btn-sm">← Back</a>
+    </div>
+    <div class="card-body">
+      <form method="post" data-validate>
+        {% csrf_token %}
+
+        <div style="text-align:center;padding:20px 0 28px">
+          <div style="font-size:3rem;margin-bottom:16px">🔑</div>
+          <p style="color:var(--text-muted);font-size:0.9rem">
+            Ask your group admin for the 8-character invite code and enter it below.
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Invite Code <span class="required">*</span></label>
+          <input type="text"
+            name="invite_code"
+            class="form-control"
+            placeholder="e.g. ABCD1234"
+            required
+            maxlength="10"
+            style="font-family:var(--font-display);font-size:1.6rem;letter-spacing:0.2em;text-align:center;text-transform:uppercase"
+            oninput="this.value = this.value.toUpperCase()">
+          <span class="form-hint" style="text-align:center;display:block;margin-top:8px">Code is 8 characters, case-insensitive.</span>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:16px">
+          Join Group →
+        </button>
+      </form>
+
+      <div class="divider"></div>
+      <div style="text-align:center">
+        <p style="color:var(--text-muted);font-size:0.875rem">Want to start your own group?</p>
+        <a href="{% url 'group_create' %}" class="btn btn-outline btn-sm" style="margin-top:8px">Create a New Group</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

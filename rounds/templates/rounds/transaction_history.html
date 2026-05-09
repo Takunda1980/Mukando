@@ -1,0 +1,112 @@
+{% extends 'rounds/base.html' %}
+{% block title %}Transaction History — Mukando{% endblock %}
+{% block page_title %}🧾 Transaction History{% endblock %}
+
+{% block extra_head %}
+<style>
+.txn-wrap { max-width:760px; margin:0 auto; }
+.section-title { font-size:0.7rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); font-family:'JetBrains Mono',monospace; margin:24px 0 12px; }
+.txn-table { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:24px; }
+.txn-row { display:grid; grid-template-columns:1fr 120px 110px 100px 100px; align-items:center; padding:12px 18px; border-top:1px solid var(--border); font-size:0.84rem; gap:8px; }
+.txn-row:first-child { border-top:none; background:var(--surface2); font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); font-family:'JetBrains Mono',monospace; padding:10px 18px; }
+.txn-row:not(:first-child):hover { background:rgba(255,255,255,0.02); }
+.txn-group { font-weight:600; }
+.txn-ref { font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:var(--muted); margin-top:2px; }
+
+.badge { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:20px; font-size:0.72rem; font-weight:700; }
+.badge-paid    { background:rgba(16,214,142,0.12); color:#10d68e; border:1px solid rgba(16,214,142,0.2); }
+.badge-pending { background:rgba(245,166,35,0.12); color:#f5a623;  border:1px solid rgba(245,166,35,0.2); }
+.badge-failed  { background:rgba(255,71,87,0.12);  color:#ff4757;  border:1px solid rgba(255,71,87,0.2); }
+.badge-unpaid  { background:rgba(255,71,87,0.08);  color:#ff4757;  border:1px solid rgba(255,71,87,0.15); }
+.badge-late    { background:rgba(255,71,87,0.12);  color:#ff4757;  border:1px solid rgba(255,71,87,0.2); }
+.badge-partial { background:rgba(245,166,35,0.1);  color:#f5a623;  border:1px solid rgba(245,166,35,0.2); }
+.badge-waived  { background:rgba(160,160,160,0.1); color:#888;     border:1px solid rgba(160,160,160,0.2); }
+
+.receipt-link { font-size:0.75rem; color:var(--accent); text-decoration:none; white-space:nowrap; }
+.receipt-link:hover { text-decoration:underline; }
+.empty-state { text-align:center; padding:40px 20px; color:var(--muted); font-size:0.875rem; }
+
+@media(max-width:640px){
+  .txn-row{ grid-template-columns:1fr 90px 80px; }
+  .txn-row > :nth-child(4), .txn-row > :nth-child(5) { display:none; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="txn-wrap">
+
+  <!-- PayNow Transactions -->
+  <div class="section-title">💳 PayNow Payments</div>
+  <div class="txn-table">
+    <div class="txn-row">
+      <span>Group / Reference</span>
+      <span>Date</span>
+      <span>Amount</span>
+      <span>Status</span>
+      <span>Receipt</span>
+    </div>
+    {% for txn in paynow_txns %}
+    <div class="txn-row">
+      <div>
+        <div class="txn-group">{{ txn.contribution.group.name }}</div>
+        <div class="txn-ref">{{ txn.reference }}</div>
+      </div>
+      <span>{{ txn.initiated_at|date:"d M Y" }}</span>
+      <span style="font-weight:700;">${{ txn.amount }}</span>
+      <span>
+        {% if txn.status == 'paid' %}
+          <span class="badge badge-paid">✅ Paid</span>
+        {% elif txn.status == 'cancelled' %}
+          <span class="badge badge-failed">Cancelled</span>
+        {% elif txn.status == 'failed' %}
+          <span class="badge badge-failed">Failed</span>
+        {% else %}
+          <span class="badge badge-pending">{{ txn.status|capfirst }}</span>
+        {% endif %}
+      </span>
+      <span>
+        {% if txn.status == 'paid' %}
+          <a href="{% url 'paynow_receipt' txn.pk %}" class="receipt-link">🧾 View</a>
+        {% else %}
+          <span style="color:var(--muted);font-size:0.75rem;">—</span>
+        {% endif %}
+      </span>
+    </div>
+    {% empty %}
+    <div class="empty-state">No PayNow transactions yet. Pay your first contribution to see it here.</div>
+    {% endfor %}
+  </div>
+
+  <!-- All Contributions -->
+  <div class="section-title">📋 All Contributions</div>
+  <div class="txn-table">
+    <div class="txn-row">
+      <span>Group / Period</span>
+      <span>Due Date</span>
+      <span>Amount</span>
+      <span>Status</span>
+      <span>Paid Date</span>
+    </div>
+    {% for c in contributions %}
+    <div class="txn-row">
+      <div>
+        <div class="txn-group">{{ c.group.name }}</div>
+        <div class="txn-ref">{{ c.cycle_date|date:"M Y" }}</div>
+      </div>
+      <span>{{ c.due_date|date:"d M Y" }}</span>
+      <span style="font-weight:700;">${{ c.amount }}</span>
+      <span>
+        <span class="badge badge-{{ c.status }}">{{ c.get_status_display }}</span>
+      </span>
+      <span style="font-size:0.8rem;color:var(--muted);">
+        {{ c.paid_date|date:"d M Y"|default:"—" }}
+      </span>
+    </div>
+    {% empty %}
+    <div class="empty-state">No contributions recorded yet.</div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

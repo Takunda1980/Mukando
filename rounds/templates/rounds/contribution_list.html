@@ -1,0 +1,110 @@
+{% extends 'rounds/base.html' %}
+{% block title %}Contributions — {{ group.name }}{% endblock %}
+{% block page_title %}Contributions{% endblock %}
+{% block page_subtitle %}{{ group.name }} — Full Ledger{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>All Contributions</h1>
+    <p>Complete payment history for {{ group.name }}</p>
+  </div>
+  <div style="display:flex;gap:10px">
+    <a href="{% url 'export_contributions' group.pk %}" class="btn btn-outline btn-sm">⬇ Export CSV</a>
+    <a href="{% url 'contribution_add' group.pk %}" class="btn btn-primary btn-sm">+ Record</a>
+    <a href="{% url 'group_detail' group.pk %}" class="btn btn-outline btn-sm">← Back</a>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="card" style="margin-bottom:20px">
+  <div class="card-body" style="padding:16px 20px">
+    <form method="get" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+      <div style="flex:1;min-width:160px">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-control">
+          <option value="">All Statuses</option>
+          <option value="paid"    {% if status_filter == 'paid'    %}selected{% endif %}>✅ Paid</option>
+          <option value="unpaid"  {% if status_filter == 'unpaid'  %}selected{% endif %}>🔵 Unpaid</option>
+          <option value="late"    {% if status_filter == 'late'    %}selected{% endif %}>⚠️ Late</option>
+          <option value="partial" {% if status_filter == 'partial' %}selected{% endif %}>🟡 Partial</option>
+        </select>
+      </div>
+      <div style="flex:1;min-width:160px">
+        <label class="form-label">Member</label>
+        <select name="member" class="form-control">
+          <option value="">All Members</option>
+          {% for m in members %}
+          <option value="{{ m.user.username }}" {% if member_filter == m.user.username %}selected{% endif %}>
+            {{ m.user.get_full_name|default:m.user.username }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div style="flex:1;min-width:120px">
+        <label class="form-label">Round</label>
+        <select name="round" class="form-control">
+          <option value="">All Rounds</option>
+          {% for r in rounds %}
+          <option value="{{ r }}" {% if round_filter == r|stringformat:'s' %}selected{% endif %}>Round {{ r }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm" style="align-self:flex-end">Filter</button>
+      <a href="{% url 'contribution_list' group.pk %}" class="btn btn-outline btn-sm" style="align-self:flex-end">Clear</a>
+    </form>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="card">
+  {% if contributions %}
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Round</th>
+          <th>Amount</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Due Date</th>
+          <th>Paid Date</th>
+          <th>Recorded By</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in contributions %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="avatar" style="width:28px;height:28px;font-size:0.65rem;background:rgba(201,80,30,0.12);color:var(--color-primary)">
+                {{ c.member.first_name|slice:":1"|default:c.member.username|slice:":1"|upper }}{{ c.member.last_name|slice:":1"|upper }}
+              </div>
+              <span style="font-weight:500;font-size:0.875rem">{{ c.member.get_full_name|default:c.member.username }}</span>
+            </div>
+          </td>
+          <td style="font-weight:600">R{{ c.round_number }}</td>
+          <td style="font-family:var(--font-display);font-weight:700">${{ c.amount }}</td>
+          <td><span class="badge badge-member">{{ c.contribution_type }}</span></td>
+          <td><span class="badge badge-{{ c.status }}">{{ c.status }}</span></td>
+          <td style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap">{{ c.due_date|date:"d M Y" }}</td>
+          <td style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap">{{ c.paid_date|date:"d M Y"|default:"—" }}</td>
+          <td style="font-size:0.8rem;color:var(--text-muted)">{{ c.recorded_by.username|default:"—" }}</td>
+          <td style="font-size:0.8rem;color:var(--text-muted);max-width:150px">{{ c.notes|truncatechars:40|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <h3>No contributions found</h3>
+      <p>{% if status_filter or member_filter or round_filter %}Try adjusting your filters.{% else %}Record the first contribution to get started.{% endif %}</p>
+      <a href="{% url 'contribution_add' group.pk %}" class="btn btn-primary btn-sm">+ Record Contribution</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

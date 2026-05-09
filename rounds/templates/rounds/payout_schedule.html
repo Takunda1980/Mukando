@@ -1,0 +1,192 @@
+{% extends 'rounds/base.html' %}
+{% block title %}Payout Schedule — {{ group.name }}{% endblock %}
+{% block page_title %}Payout Schedule{% endblock %}
+{% block page_subtitle %}{{ group.name }} — Rotation Plan{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Payout Rotation</h1>
+    <p>Who gets paid, when, and how much</p>
+  </div>
+  <div style="display:flex;gap:10px">
+    <a href="{% url 'export_payouts' group.pk %}" class="btn btn-outline btn-sm">⬇ Export CSV</a>
+    <a href="{% url 'group_detail' group.pk %}" class="btn btn-outline btn-sm">← Back</a>
+  </div>
+</div>
+
+{% with paid_count=payouts|length %}
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+  <!-- Timeline -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">📅 Full Schedule</span>
+      <span class="badge badge-member">{{ payouts|length }} rounds</span>
+    </div>
+    <div class="card-body">
+      {% if payouts %}
+      <div class="payout-timeline">
+        {% for payout in payouts %}
+        <div class="timeline-item">
+          <div class="timeline-dot
+            {% if payout.status == 'paid' %}paid
+            {% elif payout.status == 'skipped' %}skipped
+            {% elif payout.recipient == request.user %}mine
+            {% else %}pending{% endif %}">
+          </div>
+          <div class="timeline-date">{{ payout.scheduled_date|date:"d M Y" }}</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+            <div>
+              <div class="timeline-name">
+                {{ payout.recipient.get_full_name|default:payout.recipient.username }}
+                {% if payout.recipient == request.user %}<span style="font-size:0.72rem;color:var(--color-primary);font-weight:700">(You)</span>{% endif %}
+              </div>
+              <div style="font-size:0.75rem;color:var(--text-muted)">Round {{ payout.round_number }}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="timeline-amount">${{ payout.amount }}</span>
+              <span class="badge badge-{{ payout.status }}">{{ payout.status }}</span>
+            </div>
+          </div>
+
+          {% if is_admin_or_treasurer and payout.status == 'pending' %}
+          <form method="post" style="margin-top:8px;display:flex;gap:8px">
+            {% csrf_token %}
+            <input type="hidden" name="payout_id" value="{{ payout.pk }}">
+            <button type="submit" name="action" value="mark_paid"
+              class="btn btn-success btn-sm"
+              data-confirm="Mark this payout as paid to {{ payout.recipient.get_full_name|default:payout.recipient.username }}?">
+              ✓ Mark Paid
+            </button>
+            <button type="submit" name="action" value="skip"
+              class="btn btn-outline btn-sm"
+              data-confirm="Skip this payout for round {{ payout.round_number }}?">
+              Skip
+            </button>
+          </form>
+          {% endif %}
+
+          {% if payout.status == 'paid' and payout.paid_date %}
+          <div style="font-size:0.72rem;color:var(--color-success);margin-top:6px">✅ Paid on {{ payout.paid_date|date:"d M Y" }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-icon">📅</div>
+          <p>No payouts scheduled yet. Add members to the group to generate a schedule.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Summary Chart -->
+  <div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header">
+        <span class="card-title">📊 Payout Status</span>
+      </div>
+      <div class="card-body">
+        {% with paid_c=payouts|length pending_c=payouts|length %}
+        <div class="chart-container" style="height:220px">
+          <canvas id="payoutStatusChart"
+            data-paid="{% for p in payouts %}{% if p.status == 'paid' %}1{% endif %}{% endfor %}"
+            data-pending="{% for p in payouts %}{% if p.status == 'pending' %}1{% endif %}{% endfor %}"
+            data-skipped="{% for p in payouts %}{% if p.status == 'skipped' %}1{% endif %}{% endfor %}">
+          </canvas>
+        </div>
+        {% endwith %}
+
+        <!-- Compute counts inline -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px">
+          {% with paid_n=0 pending_n=0 skipped_n=0 %}
+          <div style="text-align:center;padding:12px;background:rgba(45,156,95,0.08);border-radius:10px">
+            <div style="font-family:var(--font-display);font-weight:800;font-size:1.4rem;color:var(--color-success)">
+              {% for p in payouts %}{% if p.status == 'paid' %}✓{% endif %}{% endfor %}
+            </div>
+            <div style="font-size:0.75rem;color:var(--text-muted)">Paid</div>
+          </div>
+          <div style="text-align:center;padding:12px;background:rgba(245,158,11,0.08);border-radius:10px">
+            <div style="font-family:var(--font-display);font-weight:800;font-size:1.4rem;color:var(--color-warning)">
+              {% for p in payouts %}{% if p.status == 'pending' %}•{% endif %}{% endfor %}
+            </div>
+            <div style="font-size:0.75rem;color:var(--text-muted)">Pending</div>
+          </div>
+          <div style="text-align:center;padding:12px;background:rgba(155,155,155,0.08);border-radius:10px">
+            <div style="font-family:var(--font-display);font-weight:800;font-size:1.4rem;color:var(--text-muted)">
+              {% for p in payouts %}{% if p.status == 'skipped' %}–{% endif %}{% endfor %}
+            </div>
+            <div style="font-size:0.75rem;color:var(--text-muted)">Skipped</div>
+          </div>
+          {% endwith %}
+        </div>
+      </div>
+    </div>
+
+    <!-- My payout highlight -->
+    {% for payout in payouts %}
+      {% if payout.recipient == request.user %}
+      <div class="card" style="border-color:var(--color-primary);background:linear-gradient(135deg,rgba(201,80,30,0.04),rgba(232,160,32,0.04))">
+        <div class="card-header">
+          <span class="card-title" style="color:var(--color-primary)">🎯 Your Payout</span>
+        </div>
+        <div class="card-body" style="text-align:center">
+          <div style="font-size:2.5rem;margin-bottom:10px">💰</div>
+          <div style="font-family:var(--font-display);font-size:2.2rem;font-weight:800;color:var(--color-success)">${{ payout.amount }}</div>
+          <div style="margin-top:10px;font-size:0.95rem;font-weight:600">Round {{ payout.round_number }}</div>
+          <div style="color:var(--text-muted);font-size:0.875rem;margin-top:4px">{{ payout.scheduled_date|date:"l, d F Y" }}</div>
+          <div style="margin-top:12px"><span class="badge badge-{{ payout.status }}" style="font-size:0.85rem;padding:6px 16px">{{ payout.get_status_display }}</span></div>
+        </div>
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+{% endwith %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Compute payout counts properly for the chart
+document.addEventListener('DOMContentLoaded', () => {
+  const canvas = document.getElementById('payoutStatusChart');
+  if (!canvas) return;
+
+  // Count from the table rendered server-side
+  const rows = document.querySelectorAll('.timeline-item');
+  let paid = 0, pending = 0, skipped = 0;
+  rows.forEach(r => {
+    if (r.querySelector('.timeline-dot.paid')) paid++;
+    else if (r.querySelector('.timeline-dot.skipped')) skipped++;
+    else pending++;
+  });
+
+  canvas.dataset.paid = paid;
+  canvas.dataset.pending = pending;
+  canvas.dataset.skipped = skipped;
+
+  if (typeof Chart !== 'undefined') {
+    new Chart(canvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['Paid', 'Pending', 'Skipped'],
+        datasets: [{
+          data: [paid, pending, skipped],
+          backgroundColor: ['#2D9C5F', '#F59E0B', '#9CA3AF'],
+          borderWidth: 0,
+          hoverOffset: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 16 } } }
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

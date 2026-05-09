@@ -1,0 +1,59 @@
+{% extends 'rounds/base.html' %}
+{% block title %}Create Group{% endblock %}
+{% block page_title %}➕ Create Group{% endblock %}
+{% block nav_create %}active{% endblock %}
+{% block content %}
+<div style="max-width:560px">
+  <div class="card">
+    <div class="card-header"><span class="card-title">New Mukando / Stokvel Group</span></div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Group Name *</label>
+        <input name="name" class="form-control" placeholder="e.g. Mbare Women's Mukando" required/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea name="description" class="form-control" rows="3" placeholder="Tell members what this group is about..."></textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="form-group">
+          <label class="form-label">Contribution Amount *</label>
+          <input name="contribution_amount" type="number" step="0.01" min="1" class="form-control" placeholder="50.00" required/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Currency</label>
+          <select name="currency" class="form-control">
+            <option value="USD">USD ($)</option>
+            <option value="ZWG">ZWG</option>
+            <option value="ZAR">ZAR (R)</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="form-group">
+          <label class="form-label">Cycle Period *</label>
+          <select name="cycle_period" class="form-control">
+            <option value="weekly">Weekly</option>
+            <option value="biweekly">Bi-Weekly</option>
+            <option value="monthly" selected>Monthly</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Max Members</label>
+          <input name="max_members" type="number" min="2" max="100" class="form-control" value="12"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Start Date *</label>
+        <input name="start_date" type="date" class="form-control" required/>
+      </div>
+      <div class="form-group" style="display:flex;align-items:center;gap:10px">
+        <input name="allow_grocery_rounds" type="checkbox" id="grocery-chk" checked style="width:16px;height:16px;accent-color:var(--accent)"/>
+        <label for="grocery-chk" style="font-size:0.875rem;cursor:pointer">Enable Grocery Rounds (Stokvel)</label>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:8px;padding:12px">Create Group →</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,128 @@
+{% extends 'rounds/base.html' %}
+{% block title %}Grocery Rounds — {{ group.name }}{% endblock %}
+{% block page_title %}Grocery Rounds{% endblock %}
+{% block page_subtitle %}{{ group.name }} — Grocery Contributions{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div><h1>🛒 Grocery Rounds</h1><p>Track grocery contributions and beneficiaries</p></div>
+  <a href="{% url 'group_detail' group.pk %}" class="btn btn-outline btn-sm">← Back</a>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+  <!-- Add Round Form -->
+  {% if is_admin_or_treasurer %}
+  <div class="card">
+    <div class="card-header"><span class="card-title">➕ Add Grocery Round</span></div>
+    <div class="card-body">
+      <form method="post" data-validate>
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label class="form-label">Beneficiary <span class="required">*</span></label>
+          <select name="beneficiary_id" class="form-control" required>
+            <option value="">— Select member —</option>
+            {% for m in members %}
+            <option value="{{ m.user.pk }}">{{ m.user.get_full_name|default:m.user.username }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Round Number <span class="required">*</span></label>
+            <input type="number" name="round_number" class="form-control" min="1" required value="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Scheduled Date <span class="required">*</span></label>
+            <input type="date" name="scheduled_date" class="form-control" value="{{ today }}" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <textarea name="notes" class="form-control" placeholder="Any notes about this grocery round..."></textarea>
+        </div>
+
+        <!-- Grocery Items -->
+        <div class="form-group">
+          <label class="form-label">Grocery Items</label>
+          <div id="groceryItemsList">
+            <div class="grocery-item-row">
+              <input type="text" name="item_name" placeholder="Item name (e.g. Mealie Meal)" class="form-control" required>
+              <input type="text" name="item_qty" placeholder="Qty" class="form-control" style="width:100px">
+              <input type="number" name="item_value" placeholder="$" class="form-control" style="width:100px" min="0" step="0.01">
+              <button type="button" class="remove-item-btn">✕</button>
+            </div>
+          </div>
+          <button type="button" id="addGroceryItem" class="btn btn-outline btn-sm" style="margin-top:10px">+ Add Item</button>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Save Grocery Round</button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Grocery Rounds List -->
+  <div>
+    {% if grocery_rounds %}
+      {% for gr in grocery_rounds %}
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header">
+          <div>
+            <span class="card-title">Round {{ gr.round_number }} — {{ gr.beneficiary.get_full_name|default:gr.beneficiary.username }}</span>
+            <div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px">{{ gr.scheduled_date|date:"d M Y" }}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:var(--font-display);font-weight:800;color:var(--color-success)">${{ gr.total_value }}</div>
+            <span class="badge badge-{{ gr.status }}">{{ gr.status }}</span>
+          </div>
+        </div>
+
+        {% if gr.items.all %}
+        <div style="padding:0">
+          <table style="width:100%;font-size:0.8rem">
+            <thead>
+              <tr style="background:var(--bg)">
+                <th style="padding:8px 16px;text-align:left;color:var(--text-muted)">Item</th>
+                <th style="padding:8px 16px;text-align:left;color:var(--text-muted)">Qty</th>
+                <th style="padding:8px 16px;text-align:right;color:var(--text-muted)">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in gr.items.all %}
+              <tr style="border-top:1px solid var(--border)">
+                <td style="padding:8px 16px">{{ item.item_name }}</td>
+                <td style="padding:8px 16px;color:var(--text-muted)">{{ item.quantity }}</td>
+                <td style="padding:8px 16px;text-align:right;font-weight:600">${{ item.estimated_value }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+          <div style="padding:12px 16px;color:var(--text-muted);font-size:0.8rem">No items recorded.</div>
+        {% endif %}
+
+        {% if gr.notes %}
+        <div style="padding:10px 16px 14px;border-top:1px solid var(--border);font-size:0.8rem;color:var(--text-muted)">
+          📝 {{ gr.notes }}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="card">
+        <div class="empty-state">
+          <div class="empty-icon">🛒</div>
+          <h3>No Grocery Rounds Yet</h3>
+          <p>Record the first grocery round using the form.</p>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

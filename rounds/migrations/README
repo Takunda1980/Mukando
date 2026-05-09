@@ -1,0 +1,5 @@
+Migrations are generated via:
+    python manage.py makemigrations rounds
+
+After any model change, run makemigrations then migrate.
+The initial migration must be created before first deployment.
