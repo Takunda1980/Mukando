@@ -138,7 +138,7 @@ def register_view(request):
             last_name=data.get('last_name', ''),
             phone=data.get('phone', ''),
             preferred_language=data.get('preferred_language', 'en'),
-            is_active=False,
+            is_active=True,
             email_verified=False,
         )
 
