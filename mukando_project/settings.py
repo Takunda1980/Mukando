@@ -164,6 +164,7 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = False
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
+    CSRF_TRUSTED_ORIGINS = ['https://mukando-production.up.railway.app']
 
 # ── Logging ───────────────────────────────────────────
 LOGGING = {
