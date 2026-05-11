@@ -774,7 +774,6 @@ class AIChatThrottle(UserRateThrottle):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def ai_chat_api(request):
-    # Manual throttle check (works with @api_view decorator)
     throttle = AIChatThrottle()
     if not throttle.allow_request(request, None):
         return Response(
@@ -782,7 +781,7 @@ def ai_chat_api(request):
             status=429
         )
 
-         message = request.data.get('message', '').strip()
+    message = request.data.get('message', '').strip()
     if not message:
         return Response({'error': 'Empty message'}, status=400)
 
