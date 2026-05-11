@@ -138,18 +138,13 @@ def register_view(request):
             last_name=data.get('last_name', ''),
             phone=data.get('phone', ''),
             preferred_language=data.get('preferred_language', 'en'),
-            is_active=False,
+            is_active=True,
             email_verified=False,
         )
 
-        # Send Django-token-based verification email (same as API flow)
-        from .auth_utils import send_verification_email
-        send_verification_email(user, request)
-
         messages.success(
             request,
-            'Account created! Please check your email and verify your '
-            'address before logging in.'
+            'Account created! You can now log in.'
         )
         return redirect('login')
     return render(request, 'rounds/register.html')
