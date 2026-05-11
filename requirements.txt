@@ -11,25 +11,18 @@ Pillow==10.4.0
 python-decouple==3.8
 python-dotenv==1.0.1
 
-
-
 # Africa's Talking — SMS & WhatsApp for Zimbabwe
 africastalking==1.2.8
 
 # PayNow Zimbabwe — Official Python SDK
-# Docs: https://developers.paynow.co.zw/docs/python.html
 paynow==1.0.8
 
 # Production server
 gunicorn==22.0.0
 
-# Production database (uncomment when using PostgreSQL)
-# psycopg2-binary==2.9.9
-
-# Async support (optional — for Celery background tasks)
-# celery==5.3.6
-# redis==5.0.1
-# django-celery-beat==2.6.0
+# Production database
+psycopg2-binary==2.9.9
+dj-database-url==2.1.0
 
 # Testing
 pytest==8.3.3

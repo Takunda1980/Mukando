@@ -72,12 +72,17 @@ TEMPLATES = [{
 WSGI_APPLICATION = 'mukando_project.wsgi.application'
 
 # ── Database ──────────────────────────────────────────
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL:
+    import dj_database_url
+    DATABASES = {'default': dj_database_url.parse(DATABASE_URL)}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
 
 # ── REST Framework ────────────────────────────────────
 REST_FRAMEWORK = {
@@ -135,7 +140,9 @@ else:
     CORS_ALLOW_ALL_ORIGINS = DEBUG
     CORS_ALLOWED_ORIGINS = []
 
-# ── Email ─────────────────────────────────────────────
+# ── CSRF ──────────────────────────────────────────────
+CSRF_TRUSTED_ORIGINS = ['https://mukando-production.up.railway.app']
+
 # ── Email ─────────────────────────────────────────────
 EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.resend.com')
@@ -145,10 +152,12 @@ EMAIL_USE_SSL = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'resend')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'onboarding@resend.dev')
+
+# ── Resend ────────────────────────────────────────────
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
+
 # ── Groq AI ───────────────────────────────────────────
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
-
-RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
 
 # ── Africa's Talking ──────────────────────────────────
 AT_USERNAME = os.environ.get('AT_USERNAME', '')
@@ -158,9 +167,6 @@ AT_API_KEY = os.environ.get('AT_API_KEY', '')
 PAYNOW_INTEGRATION_ID  = os.environ.get('PAYNOW_INTEGRATION_ID', '')
 PAYNOW_INTEGRATION_KEY = os.environ.get('PAYNOW_INTEGRATION_KEY', '')
 PAYNOW_TEST_MODE = os.environ.get('PAYNOW_TEST_MODE', 'True') == 'True'
-
-# ── CSRF ──────────────────────────────────────────────
-CSRF_TRUSTED_ORIGINS = ['https://mukando-production.up.railway.app']
 
 # ── Security headers (production only) ───────────────
 if not DEBUG:
