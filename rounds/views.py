@@ -138,13 +138,13 @@ def register_view(request):
             last_name=data.get('last_name', ''),
             phone=data.get('phone', ''),
             preferred_language=data.get('preferred_language', 'en'),
-            is_active=True,
+            is_active=False,
             email_verified=False,
         )
 
         # Send Django-token-based verification email (same as API flow)
         from .auth_utils import send_verification_email
-        # send_verification_email(user, request)  # temporarily disabled
+        send_verification_email(user, request)
 
         messages.success(
             request,
@@ -786,7 +786,7 @@ def ai_chat_api(request):
     if not message:
         return Response({'error': 'Empty message'}, status=400)
 
-    api_key = getattr(settings, 'GROQ_API_KEY', '')
+    api_key = getattr(settings, 'ANTHROPIC_API_KEY', '')
     ctx = build_user_context_from_db(request.user)
 
     reply = get_chat_response_sync(api_key, message, ctx)
