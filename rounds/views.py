@@ -784,8 +784,7 @@ def ai_chat_api(request):
     message = request.data.get('message', '').strip()
     if not message:
         return Response({'error': 'Empty message'}, status=400)
-
-    api_key = getattr(settings, 'ANTHROPIC_API_KEY', '')
+api_key = getattr(settings, 'GROQ_API_KEY', '')
     ctx = build_user_context_from_db(request.user)
 
     reply = get_chat_response_sync(api_key, message, ctx)
