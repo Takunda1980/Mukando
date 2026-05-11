@@ -36,7 +36,6 @@ from .serializers import (UserSerializer, UserRegisterSerializer, GroupSerialize
                           MembershipSerializer, ContributionSerializer, PayoutSerializer,
                           GroceryRoundSerializer, NotificationSerializer)
 from .permissions import IsGroupMember, IsGroupAdmin
-from .auth_utils import send_verification_email
 from .notification_service import (
     notify_payment_received, notify_payout_completed,
     notify_payout_scheduled, notify_paynow_payment_confirmed,
@@ -143,12 +142,14 @@ def register_view(request):
             email_verified=False,
         )
 
+        # Send Django-token-based verification email (same as API flow)
+        from .auth_utils import send_verification_email
         send_verification_email(user, request)
 
         messages.success(
             request,
-            'Account created! Please check your email and click the '
-            'verification link to activate your account before logging in.'
+            'Account created! Please check your email and verify your '
+            'address before logging in.'
         )
         return redirect('login')
     return render(request, 'rounds/register.html')
@@ -781,7 +782,7 @@ def ai_chat_api(request):
             status=429
         )
 
-   message = request.data.get('message', '').strip()
+         message = request.data.get('message', '').strip()
     if not message:
         return Response({'error': 'Empty message'}, status=400)
 
