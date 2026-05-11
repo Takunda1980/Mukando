@@ -148,6 +148,8 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'onboarding@resend.dev
 # ── Groq AI ───────────────────────────────────────────
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
 
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
+
 # ── Africa's Talking ──────────────────────────────────
 AT_USERNAME = os.environ.get('AT_USERNAME', '')
 AT_API_KEY = os.environ.get('AT_API_KEY', '')
