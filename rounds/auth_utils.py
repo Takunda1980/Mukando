@@ -66,17 +66,11 @@ def _send_via_resend(to_email, subject, text_body):
     api_key = getattr(settings, 'RESEND_API_KEY', '')
 
     if not api_key:
-        from django.core.mail import send_mail
-        try:
-            send_mail(
-                subject=subject,
-                message=text_body,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[to_email],
-                fail_silently=True,
-            )
-        except Exception as e:
-            logger.error("Email fallback failed: %s", e)
+        logger.warning(
+            "RESEND_API_KEY is not configured — skipping verification email "
+            "to %s. Set RESEND_API_KEY in the environment to enable email delivery.",
+            to_email,
+        )
         return
 
     from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'onboarding@resend.dev')
@@ -105,7 +99,7 @@ def _send_via_resend(to_email, subject, text_body):
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8")
         logger.error("Resend API error %s: %s", e.code, error_body)
-    except Exception as e:
+    except BaseException as e:
         logger.error("Resend send failed: %s", e)
 
 
