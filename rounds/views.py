@@ -36,6 +36,7 @@ from .serializers import (UserSerializer, UserRegisterSerializer, GroupSerialize
                           MembershipSerializer, ContributionSerializer, PayoutSerializer,
                           GroceryRoundSerializer, NotificationSerializer)
 from .permissions import IsGroupMember, IsGroupAdmin
+from .auth_utils import send_verification_email
 from .notification_service import (
     notify_payment_received, notify_payout_completed,
     notify_payout_scheduled, notify_paynow_payment_confirmed,
@@ -138,13 +139,16 @@ def register_view(request):
             last_name=data.get('last_name', ''),
             phone=data.get('phone', ''),
             preferred_language=data.get('preferred_language', 'en'),
-            is_active=True,
+            is_active=False,
             email_verified=False,
         )
 
+        send_verification_email(user, request)
+
         messages.success(
             request,
-            'Account created! You can now log in.'
+            'Account created! Please check your email and click the '
+            'verification link to activate your account before logging in.'
         )
         return redirect('login')
     return render(request, 'rounds/register.html')
