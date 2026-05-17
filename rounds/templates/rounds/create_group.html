@@ -1,59 +1,370 @@
 {% extends 'rounds/base.html' %}
 {% block title %}Create Group{% endblock %}
-{% block page_title %}➕ Create Group{% endblock %}
 {% block nav_create %}active{% endblock %}
+
 {% block content %}
-<div style="max-width:560px">
-  <div class="card">
-    <div class="card-header"><span class="card-title">New Mukando / Stokvel Group</span></div>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=DM+Sans:wght@400;500&display=swap');
+
+  .mk-wrap {
+    font-family: 'DM Sans', sans-serif;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 2rem 0;
+  }
+
+  .mk-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #888;
+    margin: 0 0 6px;
+  }
+
+  .mk-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    line-height: 1.25;
+  }
+
+  .mk-subtitle {
+    font-size: 13px;
+    color: #666;
+    margin: 0 0 2rem;
+  }
+
+  .mk-card {
+    background: #fff;
+    border: 0.5px solid rgba(0,0,0,0.12);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .mk-section {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .mk-section + .mk-section {
+    border-top: 0.5px solid rgba(0,0,0,0.08);
+  }
+
+  .mk-section-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #aaa;
+    font-weight: 500;
+    margin: 0 0 1rem;
+  }
+
+  .mk-field {
+    margin-bottom: 1rem;
+  }
+
+  .mk-field:last-child {
+    margin-bottom: 0;
+  }
+
+  .mk-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 6px;
+    letter-spacing: 0.01em;
+  }
+
+  .mk-required {
+    color: #D85A30;
+    margin-left: 2px;
+  }
+
+  .mk-hint {
+    font-size: 11px;
+    color: #aaa;
+    margin: 4px 0 0;
+  }
+
+  .mk-input {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    height: 40px;
+    padding: 0 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: #1a1a1a;
+    background: #f7f7f5;
+    border: 0.5px solid rgba(0,0,0,0.12);
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    appearance: none;
+  }
+
+  .mk-input:focus {
+    border-color: #1D9E75;
+    box-shadow: 0 0 0 3px rgba(29, 158, 117, 0.12);
+    background: #fff;
+  }
+
+  .mk-input::placeholder {
+    color: #bbb;
+    font-size: 13px;
+  }
+
+  textarea.mk-input {
+    height: auto;
+    padding: 10px 12px;
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.5;
+  }
+
+  select.mk-input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-color: #f7f7f5;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+
+  .mk-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .mk-amount-wrap {
+    position: relative;
+  }
+
+  .mk-currency-prefix {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px;
+    color: #aaa;
+    pointer-events: none;
+    font-weight: 500;
+  }
+
+  .mk-input-prefixed {
+    padding-left: 28px;
+  }
+
+  .mk-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 0;
+  }
+
+  .mk-toggle-info { flex: 1; }
+
+  .mk-toggle-title {
+    font-size: 13px;
+    font-weight: 500;
+    margin: 0 0 2px;
+  }
+
+  .mk-toggle-desc {
+    font-size: 11px;
+    color: #aaa;
+    margin: 0;
+  }
+
+  .mk-switch {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+
+  .mk-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .mk-slider {
+    position: absolute;
+    inset: 0;
+    background: #ddd;
+    border-radius: 22px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .mk-slider:before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    left: 3px;
+    top: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+
+  .mk-switch input:checked + .mk-slider { background: #1D9E75; }
+  .mk-switch input:checked + .mk-slider:before { transform: translateX(18px); }
+
+  .mk-footer {
+    padding: 1.25rem 1.5rem;
+    background: #f7f7f5;
+    border-top: 0.5px solid rgba(0,0,0,0.08);
+  }
+
+  .mk-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 48px;
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: white;
+    background: #0F6E56;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+
+  .mk-btn:hover { background: #085041; }
+  .mk-btn:active { transform: scale(0.99); }
+
+  .mk-btn-sub {
+    text-align: center;
+    font-size: 11px;
+    color: #aaa;
+    margin: 8px 0 0;
+  }
+</style>
+
+<div class="mk-wrap">
+  <p class="mk-eyebrow">Community savings</p>
+  <h1 class="mk-title">Start a new group</h1>
+  <p class="mk-subtitle">Set up your Mukando or Stokvel in under a minute</p>
+
+  <div class="mk-card">
     <form method="post">
       {% csrf_token %}
-      <div class="form-group">
-        <label class="form-label">Group Name *</label>
-        <input name="name" class="form-control" placeholder="e.g. Mbare Women's Mukando" required/>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Description</label>
-        <textarea name="description" class="form-control" rows="3" placeholder="Tell members what this group is about..."></textarea>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-        <div class="form-group">
-          <label class="form-label">Contribution Amount *</label>
-          <input name="contribution_amount" type="number" step="0.01" min="1" class="form-control" placeholder="50.00" required/>
+
+      <!-- Group Identity -->
+      <div class="mk-section">
+        <p class="mk-section-label">Group identity</p>
+
+        <div class="mk-field">
+          <label class="mk-label">Group name <span class="mk-required">*</span></label>
+          <input name="name" class="mk-input" type="text" placeholder="e.g. Mbare Women's Mukando" required />
         </div>
-        <div class="form-group">
-          <label class="form-label">Currency</label>
-          <select name="currency" class="form-control">
-            <option value="USD">USD ($)</option>
-            <option value="ZWG">ZWG</option>
-            <option value="ZAR">ZAR (R)</option>
-          </select>
+
+        <div class="mk-field">
+          <label class="mk-label">Description</label>
+          <textarea name="description" class="mk-input" placeholder="Tell members what this group is about..."></textarea>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-        <div class="form-group">
-          <label class="form-label">Cycle Period *</label>
-          <select name="cycle_period" class="form-control">
-            <option value="weekly">Weekly</option>
-            <option value="biweekly">Bi-Weekly</option>
-            <option value="monthly" selected>Monthly</option>
-          </select>
+
+      <!-- Financial Settings -->
+      <div class="mk-section">
+        <p class="mk-section-label">Financial settings</p>
+
+        <div class="mk-grid-2" style="margin-bottom:1rem">
+          <div class="mk-field" style="margin-bottom:0">
+            <label class="mk-label">Contribution amount <span class="mk-required">*</span></label>
+            <div class="mk-amount-wrap">
+              <span class="mk-currency-prefix" id="currency-prefix">$</span>
+              <input name="contribution_amount" type="number" step="0.01" min="1"
+                     class="mk-input mk-input-prefixed" placeholder="50.00" required />
+            </div>
+            <p class="mk-hint">Per member, per cycle</p>
+          </div>
+          <div class="mk-field" style="margin-bottom:0">
+            <label class="mk-label">Currency</label>
+            <select name="currency" class="mk-input" id="currency-select">
+              <option value="USD" data-symbol="$">USD ($)</option>
+              <option value="ZWG" data-symbol="ZWG">ZWG</option>
+              <option value="ZAR" data-symbol="R">ZAR (R)</option>
+            </select>
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Max Members</label>
-          <input name="max_members" type="number" min="2" max="100" class="form-control" value="12"/>
+
+        <div class="mk-grid-2">
+          <div class="mk-field" style="margin-bottom:0">
+            <label class="mk-label">Cycle period <span class="mk-required">*</span></label>
+            <select name="cycle_period" class="mk-input">
+              <option value="weekly">Weekly</option>
+              <option value="biweekly">Bi-weekly</option>
+              <option value="monthly" selected>Monthly</option>
+            </select>
+            <p class="mk-hint">How often members contribute</p>
+          </div>
+          <div class="mk-field" style="margin-bottom:0">
+            <label class="mk-label">Max members</label>
+            <input name="max_members" type="number" min="2" max="100"
+                   class="mk-input" value="12" />
+            <p class="mk-hint">Between 2 and 100</p>
+          </div>
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Start Date *</label>
-        <input name="start_date" type="date" class="form-control" required/>
+
+      <!-- Timeline -->
+      <div class="mk-section">
+        <p class="mk-section-label">Timeline</p>
+        <div class="mk-field">
+          <label class="mk-label">Start date <span class="mk-required">*</span></label>
+          <input name="start_date" type="date" class="mk-input" id="start-date" required />
+          <p class="mk-hint">Must be a future date</p>
+        </div>
       </div>
-      <div class="form-group" style="display:flex;align-items:center;gap:10px">
-        <input name="allow_grocery_rounds" type="checkbox" id="grocery-chk" checked style="width:16px;height:16px;accent-color:var(--accent)"/>
-        <label for="grocery-chk" style="font-size:0.875rem;cursor:pointer">Enable Grocery Rounds (Stokvel)</label>
+
+      <!-- Features -->
+      <div class="mk-section">
+        <p class="mk-section-label">Features</p>
+        <div class="mk-toggle-row">
+          <div class="mk-toggle-info">
+            <p class="mk-toggle-title">Grocery rounds</p>
+            <p class="mk-toggle-desc">Members receive grocery vouchers instead of cash on their turn</p>
+          </div>
+          <label class="mk-switch">
+            <input name="allow_grocery_rounds" type="checkbox" checked />
+            <span class="mk-slider"></span>
+          </label>
+        </div>
       </div>
-      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:8px;padding:12px">Create Group →</button>
+
+      <!-- Submit -->
+      <div class="mk-footer">
+        <button type="submit" class="mk-btn">Create group &rarr;</button>
+        <p class="mk-btn-sub">You can invite members after the group is created</p>
+      </div>
+
     </form>
   </div>
 </div>
+
+<script>
+  // Set min date to tomorrow
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  document.getElementById('start-date').min = tomorrow.toISOString().split('T')[0];
+
+  // Update currency prefix symbol
+  const sel = document.getElementById('currency-select');
+  const prefix = document.getElementById('currency-prefix');
+  sel.addEventListener('change', function () {
+    const sym = sel.options[sel.selectedIndex].dataset.symbol;
+    prefix.textContent = sym;
+    prefix.style.fontSize = sym === 'ZWG' ? '10px' : '13px';
+  });
+</script>
 {% endblock %}
