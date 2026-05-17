@@ -1,351 +1,350 @@
 {% extends 'rounds/base.html' %}
 {% block title %}Create Group{% endblock %}
+{% block page_title %}Create Group{% endblock %}
 {% block nav_create %}active{% endblock %}
 
 {% block content %}
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=DM+Sans:wght@400;500&display=swap');
-
-  .mk-wrap {
-    font-family: 'DM Sans', sans-serif;
-    max-width: 560px;
+  .cg-wrap {
+    max-width: 580px;
     margin: 0 auto;
-    padding: 2rem 0;
+    padding: 2rem 0 3rem;
   }
 
-  .mk-eyebrow {
-    font-size: 11px;
-    letter-spacing: 0.12em;
+  .cg-header { margin-bottom: 2rem; animation: fadeUp 0.3s var(--ease-out) both; }
+
+  .cg-eyebrow {
+    font-family: var(--f-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: #888;
-    margin: 0 0 6px;
-  }
-
-  .mk-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 26px;
-    font-weight: 600;
-    margin: 0 0 4px;
-    line-height: 1.25;
-  }
-
-  .mk-subtitle {
-    font-size: 13px;
-    color: #666;
-    margin: 0 0 2rem;
-  }
-
-  .mk-card {
-    background: #fff;
-    border: 0.5px solid rgba(0,0,0,0.12);
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
-  .mk-section {
-    padding: 1.25rem 1.5rem;
-  }
-
-  .mk-section + .mk-section {
-    border-top: 0.5px solid rgba(0,0,0,0.08);
-  }
-
-  .mk-section-label {
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #aaa;
-    font-weight: 500;
-    margin: 0 0 1rem;
-  }
-
-  .mk-field {
-    margin-bottom: 1rem;
-  }
-
-  .mk-field:last-child {
-    margin-bottom: 0;
-  }
-
-  .mk-label {
-    display: block;
-    font-size: 12px;
-    font-weight: 500;
-    color: #555;
+    color: var(--amber);
     margin-bottom: 6px;
-    letter-spacing: 0.01em;
   }
 
-  .mk-required {
-    color: #D85A30;
-    margin-left: 2px;
+  .cg-title {
+    font-family: var(--f-display);
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    margin-bottom: 6px;
   }
 
-  .mk-hint {
-    font-size: 11px;
-    color: #aaa;
-    margin: 4px 0 0;
+  .cg-title em { font-style: normal; color: var(--amber); }
+
+  .cg-subtitle { font-size: 0.85rem; color: var(--text2); }
+
+  .cg-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    animation: fadeUp 0.4s var(--ease-out) both;
   }
 
-  .mk-input {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-    height: 40px;
-    padding: 0 12px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    color: #1a1a1a;
-    background: #f7f7f5;
-    border: 0.5px solid rgba(0,0,0,0.12);
-    border-radius: 8px;
-    outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
-    appearance: none;
-  }
+  .cg-section { padding: 1.5rem; }
+  .cg-section + .cg-section { border-top: 1px solid var(--border); }
 
-  .mk-input:focus {
-    border-color: #1D9E75;
-    box-shadow: 0 0 0 3px rgba(29, 158, 117, 0.12);
-    background: #fff;
-  }
-
-  .mk-input::placeholder {
-    color: #bbb;
-    font-size: 13px;
-  }
-
-  textarea.mk-input {
-    height: auto;
-    padding: 10px 12px;
-    resize: vertical;
-    min-height: 80px;
-    line-height: 1.5;
-  }
-
-  select.mk-input {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-color: #f7f7f5;
-    padding-right: 36px;
-    cursor: pointer;
-  }
-
-  .mk-grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-
-  .mk-amount-wrap {
-    position: relative;
-  }
-
-  .mk-currency-prefix {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 13px;
-    color: #aaa;
-    pointer-events: none;
-    font-weight: 500;
-  }
-
-  .mk-input-prefixed {
-    padding-left: 28px;
-  }
-
-  .mk-toggle-row {
+  .cg-section-label {
+    font-family: var(--f-mono);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.1rem;
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 4px 0;
+    gap: 8px;
+  }
+  .cg-section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
   }
 
-  .mk-toggle-info { flex: 1; }
+  .cg-field { margin-bottom: 1rem; }
+  .cg-field:last-child { margin-bottom: 0; }
 
-  .mk-toggle-title {
-    font-size: 13px;
+  .cg-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text2);
+    margin-bottom: 7px;
+  }
+
+  .cg-required { color: var(--amber); margin-left: 2px; }
+
+  .cg-hint {
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-family: var(--f-mono);
+    margin-top: 5px;
+  }
+
+  .cg-input {
+    display: block;
+    width: 100%;
+    height: 42px;
+    padding: 0 14px;
+    font-family: var(--f-body);
+    font-size: 0.875rem;
+    color: var(--text);
+    background: var(--deep);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    outline: none;
+    transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+    box-sizing: border-box;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .cg-input::placeholder { color: var(--muted); font-size: 0.82rem; }
+  .cg-input:hover { border-color: rgba(255,255,255,0.18); }
+  .cg-input:focus {
+    border-color: var(--amber);
+    box-shadow: 0 0 0 3px var(--amber-glow);
+  }
+
+  textarea.cg-input {
+    height: auto;
+    min-height: 88px;
+    padding: 12px 14px;
+    resize: vertical;
+    line-height: 1.6;
+  }
+
+  select.cg-input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235a6a82' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 13px center;
+    background-color: var(--deep);
+    padding-right: 38px;
+    cursor: pointer;
+  }
+  select.cg-input option { background: var(--surface); color: var(--text); }
+
+  .cg-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .cg-amount-wrap { position: relative; }
+  .cg-prefix {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--f-mono);
+    font-size: 0.75rem;
+    color: var(--amber);
     font-weight: 500;
-    margin: 0 0 2px;
+    pointer-events: none;
   }
+  .cg-input-prefixed { padding-left: 34px; }
 
-  .mk-toggle-desc {
-    font-size: 11px;
-    color: #aaa;
-    margin: 0;
+  .cg-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    background: var(--deep);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    transition: border-color 0.2s;
+    cursor: pointer;
   }
+  .cg-toggle-row:hover { border-color: var(--border2); }
 
-  .mk-switch {
-    position: relative;
-    width: 40px;
-    height: 22px;
-    flex-shrink: 0;
-  }
+  .cg-toggle-icon { font-size: 1.1rem; flex-shrink: 0; }
+  .cg-toggle-info { flex: 1; }
+  .cg-toggle-title { font-size: 0.82rem; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .cg-toggle-desc { font-size: 0.7rem; color: var(--muted); font-family: var(--f-mono); }
 
-  .mk-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
+  .cg-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+  .cg-switch input { opacity: 0; width: 0; height: 0; }
 
-  .mk-slider {
+  .cg-slider {
     position: absolute;
     inset: 0;
-    background: #ddd;
-    border-radius: 22px;
+    background: var(--border2);
+    border-radius: 24px;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.25s var(--ease-out);
   }
-
-  .mk-slider:before {
+  .cg-slider::before {
     content: '';
     position: absolute;
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     left: 3px;
     top: 3px;
-    background: white;
+    background: var(--muted);
     border-radius: 50%;
-    transition: transform 0.2s;
+    transition: transform 0.25s var(--ease-spring), background 0.25s;
+  }
+  .cg-switch input:checked + .cg-slider {
+    background: var(--amber-glow);
+    border: 1px solid var(--amber-dim);
+  }
+  .cg-switch input:checked + .cg-slider::before {
+    transform: translateX(20px);
+    background: var(--amber);
+    box-shadow: 0 0 8px var(--amber-glow);
   }
 
-  .mk-switch input:checked + .mk-slider { background: #1D9E75; }
-  .mk-switch input:checked + .mk-slider:before { transform: translateX(18px); }
-
-  .mk-footer {
-    padding: 1.25rem 1.5rem;
-    background: #f7f7f5;
-    border-top: 0.5px solid rgba(0,0,0,0.08);
+  .cg-footer {
+    padding: 1.5rem;
+    background: var(--glass);
+    border-top: 1px solid var(--border);
   }
 
-  .mk-btn {
+  .cg-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
     width: 100%;
-    height: 48px;
-    font-family: 'Playfair Display', serif;
-    font-size: 15px;
-    font-weight: 500;
-    color: white;
-    background: #0F6E56;
+    height: 50px;
+    font-family: var(--f-display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--void);
+    background: linear-gradient(135deg, var(--amber), var(--amber-dim));
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
-    transition: background 0.15s, transform 0.1s;
+    box-shadow: 0 4px 20px var(--amber-glow);
+    transition: opacity 0.2s, transform 0.15s var(--ease-spring), box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .cg-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+  }
+  .cg-btn:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 8px 28px var(--amber-glow); }
+  .cg-btn:active { transform: scale(0.98); }
+
+  .cg-btn-sub {
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-family: var(--f-mono);
+    margin-top: 10px;
   }
 
-  .mk-btn:hover { background: #085041; }
-  .mk-btn:active { transform: scale(0.99); }
-
-  .mk-btn-sub {
-    text-align: center;
-    font-size: 11px;
-    color: #aaa;
-    margin: 8px 0 0;
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 </style>
 
-<div class="mk-wrap">
-  <p class="mk-eyebrow">Community savings</p>
-  <h1 class="mk-title">Start a new group</h1>
-  <p class="mk-subtitle">Set up your Mukando or Stokvel in under a minute</p>
+<div class="cg-wrap">
+  <div class="cg-header">
+    <p class="cg-eyebrow">⬡ New group</p>
+    <h1 class="cg-title">Create a <em>Mukando</em></h1>
+    <p class="cg-subtitle">Set up your savings circle in under a minute</p>
+  </div>
 
-  <div class="mk-card">
+  <div class="cg-card">
     <form method="post">
       {% csrf_token %}
 
-      <!-- Group Identity -->
-      <div class="mk-section">
-        <p class="mk-section-label">Group identity</p>
-
-        <div class="mk-field">
-          <label class="mk-label">Group name <span class="mk-required">*</span></label>
-          <input name="name" class="mk-input" type="text" placeholder="e.g. Mbare Women's Mukando" required />
+      <!-- Identity -->
+      <div class="cg-section">
+        <p class="cg-section-label">Group identity</p>
+        <div class="cg-field">
+          <label class="cg-label">Group name <span class="cg-required">*</span></label>
+          <input name="name" type="text" class="cg-input"
+                 placeholder="e.g. Mbare Women's Mukando" required />
         </div>
-
-        <div class="mk-field">
-          <label class="mk-label">Description</label>
-          <textarea name="description" class="mk-input" placeholder="Tell members what this group is about..."></textarea>
+        <div class="cg-field">
+          <label class="cg-label">Description</label>
+          <textarea name="description" class="cg-input"
+                    placeholder="Tell members what this group is about..."></textarea>
         </div>
       </div>
 
-      <!-- Financial Settings -->
-      <div class="mk-section">
-        <p class="mk-section-label">Financial settings</p>
-
-        <div class="mk-grid-2" style="margin-bottom:1rem">
-          <div class="mk-field" style="margin-bottom:0">
-            <label class="mk-label">Contribution amount <span class="mk-required">*</span></label>
-            <div class="mk-amount-wrap">
-              <span class="mk-currency-prefix" id="currency-prefix">$</span>
+      <!-- Financial -->
+      <div class="cg-section">
+        <p class="cg-section-label">Financial settings</p>
+        <div class="cg-grid-2" style="margin-bottom:1rem">
+          <div class="cg-field" style="margin-bottom:0">
+            <label class="cg-label">Contribution amount <span class="cg-required">*</span></label>
+            <div class="cg-amount-wrap">
+              <span class="cg-prefix" id="cg-prefix">$</span>
               <input name="contribution_amount" type="number" step="0.01" min="1"
-                     class="mk-input mk-input-prefixed" placeholder="50.00" required />
+                     class="cg-input cg-input-prefixed" placeholder="50.00" required />
             </div>
-            <p class="mk-hint">Per member, per cycle</p>
+            <p class="cg-hint">per member · per cycle</p>
           </div>
-          <div class="mk-field" style="margin-bottom:0">
-            <label class="mk-label">Currency</label>
-            <select name="currency" class="mk-input" id="currency-select">
-              <option value="USD" data-symbol="$">USD ($)</option>
-              <option value="ZWG" data-symbol="ZWG">ZWG</option>
-              <option value="ZAR" data-symbol="R">ZAR (R)</option>
+          <div class="cg-field" style="margin-bottom:0">
+            <label class="cg-label">Currency</label>
+            <select name="currency" class="cg-input" id="cg-currency">
+              <option value="USD" data-sym="$">USD ($)</option>
+              <option value="ZWG" data-sym="ZWG">ZWG</option>
+              <option value="ZAR" data-sym="R">ZAR (R)</option>
             </select>
           </div>
         </div>
-
-        <div class="mk-grid-2">
-          <div class="mk-field" style="margin-bottom:0">
-            <label class="mk-label">Cycle period <span class="mk-required">*</span></label>
-            <select name="cycle_period" class="mk-input">
+        <div class="cg-grid-2">
+          <div class="cg-field" style="margin-bottom:0">
+            <label class="cg-label">Cycle period <span class="cg-required">*</span></label>
+            <select name="cycle_period" class="cg-input">
               <option value="weekly">Weekly</option>
               <option value="biweekly">Bi-weekly</option>
               <option value="monthly" selected>Monthly</option>
             </select>
-            <p class="mk-hint">How often members contribute</p>
+            <p class="cg-hint">how often members contribute</p>
           </div>
-          <div class="mk-field" style="margin-bottom:0">
-            <label class="mk-label">Max members</label>
+          <div class="cg-field" style="margin-bottom:0">
+            <label class="cg-label">Max members</label>
             <input name="max_members" type="number" min="2" max="100"
-                   class="mk-input" value="12" />
-            <p class="mk-hint">Between 2 and 100</p>
+                   class="cg-input" value="12" />
+            <p class="cg-hint">2 – 100 members</p>
           </div>
         </div>
       </div>
 
       <!-- Timeline -->
-      <div class="mk-section">
-        <p class="mk-section-label">Timeline</p>
-        <div class="mk-field">
-          <label class="mk-label">Start date <span class="mk-required">*</span></label>
-          <input name="start_date" type="date" class="mk-input" id="start-date" required />
-          <p class="mk-hint">Must be a future date</p>
+      <div class="cg-section">
+        <p class="cg-section-label">Timeline</p>
+        <div class="cg-field">
+          <label class="cg-label">Start date <span class="cg-required">*</span></label>
+          <input name="start_date" type="date" class="cg-input" id="cg-start-date" required />
+          <p class="cg-hint">must be a future date</p>
         </div>
       </div>
 
       <!-- Features -->
-      <div class="mk-section">
-        <p class="mk-section-label">Features</p>
-        <div class="mk-toggle-row">
-          <div class="mk-toggle-info">
-            <p class="mk-toggle-title">Grocery rounds</p>
-            <p class="mk-toggle-desc">Members receive grocery vouchers instead of cash on their turn</p>
+      <div class="cg-section">
+        <p class="cg-section-label">Features</p>
+        <label class="cg-toggle-row">
+          <span class="cg-toggle-icon">🛒</span>
+          <div class="cg-toggle-info">
+            <p class="cg-toggle-title">Grocery rounds (Stokvel)</p>
+            <p class="cg-toggle-desc">members receive grocery vouchers instead of cash on their turn</p>
           </div>
-          <label class="mk-switch">
+          <div class="cg-switch">
             <input name="allow_grocery_rounds" type="checkbox" checked />
-            <span class="mk-slider"></span>
-          </label>
-        </div>
+            <span class="cg-slider"></span>
+          </div>
+        </label>
       </div>
 
       <!-- Submit -->
-      <div class="mk-footer">
-        <button type="submit" class="mk-btn">Create group &rarr;</button>
-        <p class="mk-btn-sub">You can invite members after the group is created</p>
+      <div class="cg-footer">
+        <button type="submit" class="cg-btn">
+          <span>✦</span>
+          <span>Create group</span>
+          <span>→</span>
+        </button>
+        <p class="cg-btn-sub">invite members after the group is created</p>
       </div>
 
     </form>
@@ -353,18 +352,17 @@
 </div>
 
 <script>
-  // Set min date to tomorrow
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  document.getElementById('start-date').min = tomorrow.toISOString().split('T')[0];
+  const sd = document.getElementById('cg-start-date');
+  const t = new Date();
+  t.setDate(t.getDate() + 1);
+  sd.min = t.toISOString().split('T')[0];
 
-  // Update currency prefix symbol
-  const sel = document.getElementById('currency-select');
-  const prefix = document.getElementById('currency-prefix');
+  const sel = document.getElementById('cg-currency');
+  const pfx = document.getElementById('cg-prefix');
   sel.addEventListener('change', function () {
-    const sym = sel.options[sel.selectedIndex].dataset.symbol;
-    prefix.textContent = sym;
-    prefix.style.fontSize = sym === 'ZWG' ? '10px' : '13px';
+    const sym = sel.options[sel.selectedIndex].dataset.sym;
+    pfx.textContent = sym;
+    pfx.style.fontSize = sym.length > 1 ? '0.6rem' : '0.75rem';
   });
 </script>
 {% endblock %}
