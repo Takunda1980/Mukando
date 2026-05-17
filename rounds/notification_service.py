@@ -162,6 +162,44 @@ def _build_html_email(title: str, body: str, group_name: str = None, cta_text: s
 
 # ─── High-level notification dispatcher ──────────────────────────────────────
 
+def _dispatch_notifications(
+    user, group, title, message,
+    send_email, send_sms, send_whatsapp,
+    cta_text, cta_url,
+):
+    """Send email/SMS/WhatsApp in a background thread — never blocks the request."""
+    if send_email:
+        try:
+            html = _build_html_email(
+                title=title,
+                body=message.replace('\n', '<br>'),
+                group_name=group.name if group else None,
+                cta_text=cta_text,
+                cta_url=cta_url,
+            )
+            send_email_notification(user, f"Mukando: {title}", message, html)
+        except Exception as exc:
+            logger.error("Background email failed for %s: %s", user.email, exc)
+
+    if send_sms:
+        try:
+            sms_text = f"Mukando: {title}\n{message}"
+            if group:
+                sms_text += f"\nGroup: {group.name}"
+            send_sms_whatsapp_notification(user.phone, sms_text, channel='sms')
+        except Exception as exc:
+            logger.error("Background SMS failed for %s: %s", user.phone, exc)
+
+    if send_whatsapp:
+        try:
+            wa_text = f"🌿 *Mukando* — {title}\n{message}"
+            if group:
+                wa_text += f"\n📋 Group: {group.name}"
+            send_sms_whatsapp_notification(user.phone, wa_text, channel='whatsapp')
+        except Exception as exc:
+            logger.error("Background WhatsApp failed for %s: %s", user.phone, exc)
+
+
 def create_and_send_notification(
     user,
     group,
@@ -174,9 +212,11 @@ def create_and_send_notification(
     cta_text: str = None,
     cta_url: str = None,
 ):
-    """Create a DB notification record and dispatch email/SMS/WhatsApp."""
+    """Create a DB notification record and dispatch email/SMS/WhatsApp in background."""
+    import threading
     from .models import Notification
 
+    # Save to DB immediately — this always succeeds even if email fails
     notification = Notification.objects.create(
         user=user,
         group=group,
@@ -185,27 +225,15 @@ def create_and_send_notification(
         message=message,
     )
 
-    if send_email:
-        html = _build_html_email(
-            title=title,
-            body=message.replace('\n', '<br>'),
-            group_name=group.name if group else None,
-            cta_text=cta_text,
-            cta_url=cta_url,
-        )
-        send_email_notification(user, f"Mukando: {title}", message, html)
-
-    if send_sms:
-        sms_text = f"Mukando: {title}\n{message}"
-        if group:
-            sms_text += f"\nGroup: {group.name}"
-        send_sms_whatsapp_notification(user.phone, sms_text, channel='sms')
-
-    if send_whatsapp:
-        wa_text = f"🌿 *Mukando* — {title}\n{message}"
-        if group:
-            wa_text += f"\n📋 Group: {group.name}"
-        send_sms_whatsapp_notification(user.phone, wa_text, channel='whatsapp')
+    # Fire-and-forget: send email/SMS in background so request isn't blocked
+    thread = threading.Thread(
+        target=_dispatch_notifications,
+        args=(user, group, title, message,
+              send_email, send_sms, send_whatsapp,
+              cta_text, cta_url),
+        daemon=True,
+    )
+    thread.start()
 
     return notification
 
