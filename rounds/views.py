@@ -471,7 +471,8 @@ def paynow_pay_view(request, contribution_id):
             messages.error(request, 'PayNow is not configured. Contact your administrator.')
             return redirect('group_detail', group_id=contribution.group.pk)
 
-        return_url = request.build_absolute_uri('/paynow/return/')
+        pre_reference = f"MKD-{str(contribution.id)[:8].upper()}"
+        return_url = request.build_absolute_uri(f'/paynow/return/?reference={pre_reference}')
         result_url = request.build_absolute_uri('/paynow/result/')
 
         result = initiate_payment(
