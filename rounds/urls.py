@@ -33,6 +33,7 @@ urlpatterns = [
     path('groups/<uuid:group_id>/contributions/', views.contributions_view, name='contributions'),
     path('groups/<uuid:group_id>/export-csv/', views.export_csv_view, name='export_csv'),
     path('groups/<uuid:group_id>/payout-schedule/', views.payout_schedule_view, name='payout_schedule'),
+    path('groups/<uuid:group_id>/regenerate-payouts/', views.regenerate_payouts_view, name='regenerate_payouts'),
 
     # Notifications
     path('notifications/', views.notifications_view, name='notifications'),
