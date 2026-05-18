@@ -55,7 +55,11 @@ def generate_payout_schedule(group):
         .first()
     ) or 0
 
+    # Guard against start_date arriving as a string (e.g. straight from POST data)
     payout_date = group.start_date
+    if isinstance(payout_date, str):
+        from datetime import datetime
+        payout_date = datetime.strptime(payout_date, '%Y-%m-%d').date()
     # Advance payout_date past already-completed rounds
     for _ in range(last_done):
         payout_date = _add_period(payout_date, group.cycle_period)
