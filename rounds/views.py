@@ -36,6 +36,7 @@ from .serializers import (UserSerializer, UserRegisterSerializer, GroupSerialize
                           MembershipSerializer, ContributionSerializer, PayoutSerializer,
                           GroceryRoundSerializer, NotificationSerializer)
 from .permissions import IsGroupMember, IsGroupAdmin
+from .utils import generate_payout_schedule
 from .notification_service import (
     notify_payment_received, notify_payout_completed,
     notify_payout_scheduled, notify_paynow_payment_confirmed,
@@ -341,6 +342,7 @@ def create_group_view(request):
             Membership.objects.create(
                 user=request.user, group=group, role='admin', payout_position=1
             )
+            generate_payout_schedule(group)
             messages.success(request, f'Group "{group.name}" created! Invite code: {group.invite_code}')
             return redirect('group_detail', group_id=group.pk)
         except Exception as e:
@@ -361,6 +363,7 @@ def join_group_view(request):
             else:
                 pos = group.member_count() + 1
                 Membership.objects.create(user=request.user, group=group, payout_position=pos)
+                generate_payout_schedule(group)
                 messages.success(request, f'Joined "{group.name}" successfully!')
                 return redirect('group_detail', group_id=group.pk)
         except Group.DoesNotExist:
@@ -384,6 +387,18 @@ def payout_schedule_view(request, group_id):
     get_object_or_404(Membership, user=request.user, group=group, is_active=True)
     payouts = Payout.objects.filter(group=group).select_related('recipient')
     return render(request, 'rounds/payout_schedule.html', {'group': group, 'payouts': payouts})
+
+
+@login_required
+def regenerate_payouts_view(request, group_id):
+    group = get_object_or_404(Group, pk=group_id)
+    membership = get_object_or_404(Membership, user=request.user, group=group, is_active=True)
+    if membership.role not in ('admin', 'treasurer'):
+        messages.error(request, 'Only admins and treasurers can regenerate the payout schedule.')
+        return redirect('group_detail', group_id=group.pk)
+    generate_payout_schedule(group)
+    messages.success(request, 'Payout schedule regenerated successfully!')
+    return redirect('group_detail', group_id=group.pk)
 
 
 @login_required
@@ -668,6 +683,7 @@ class GroupViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Group is full'}, status=400)
         pos = group.member_count() + 1
         m = Membership.objects.create(user=request.user, group=group, payout_position=pos)
+        generate_payout_schedule(group)
         return Response(MembershipSerializer(m).data, status=201)
 
     @action(detail=True, methods=['get'])
