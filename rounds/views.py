@@ -342,6 +342,7 @@ def create_group_view(request):
             Membership.objects.create(
                 user=request.user, group=group, role='admin', payout_position=1
             )
+            group.refresh_from_db()
             generate_payout_schedule(group)
             messages.success(request, f'Group "{group.name}" created! Invite code: {group.invite_code}')
             return redirect('group_detail', group_id=group.pk)
