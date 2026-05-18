@@ -141,6 +141,9 @@
   <div class="card">
     <div class="card-header">
       <span class="card-title">Payout Schedule</span>
+      {% if membership.role in "admin,treasurer" %}
+      <a href="{% url 'regenerate_payouts' group.pk %}" class="btn btn-primary btn-sm" onclick="return confirm('Regenerate the payout schedule? Pending payouts will be rebuilt.')">🔄 Regenerate Schedule</a>
+      {% endif %}
     </div>
     {% if payouts %}
     <div class="table-wrap">
